@@ -6,12 +6,6 @@ from Airfoil_Section import Airfoil_Section
 
 class Hub():
     def __init__(self, interpolation_points, outer_radius, inner_radius, thickness):
-        #Parameters
-        # outer_radius = 0.5
-        # inner_radius = 0.15
-        # thickness = 0.4
-        # z_offset = -thickness*0.6
-
         self.outer_radius = outer_radius
         self.inner_radius = inner_radius
         self.thickness = thickness
