@@ -25,7 +25,7 @@ hub_geometry_types = {
                 }
 
 interpolation_points = 100
-counterclockwise_rotation = False
+counterclockwise_rotation = True  ## if false, propeller is mirrored
 linear_interpolation = False  ## Set to true for testing and faster processing. Products are not linearly interpolated
 ########################################################################################################################
 # READ ME
@@ -43,7 +43,7 @@ linear_interpolation = False  ## Set to true for testing and faster processing. 
 # Run the script
 ########################################################################################################################
 ### CHANGE FILENAME HERE
-filename = os.getcwd() + r"\APC Propeller Geometry Data\10x6-PERF.PE0"
+filename = os.getcwd() + r"\APC Propeller Geometry Data\10x7E-PERF.PE0"
 ### SET HUB GEOMETRY HERE (or leave as is to infer from propeller name)
 infer_hub_geometry = True  # If true, hub geometry is inferred from the propeller name and overwrites the following values. If False, hub geometry has to be defined manually
 outer_radius = 0.65 / 2

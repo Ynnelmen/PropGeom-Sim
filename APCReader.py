@@ -9,9 +9,6 @@ class APCReader():
         self.geometry_data = self.read_geom_data(filename)
         # self.geometry_data = self.geometry_data[:-1]  ## TODO  (Skipping size 0 airfoil)
         self.geometry_data.loc[self.geometry_data.index[-1], "CHORD"] = 0.01   # TODO (Arbitrary value for last airfoil)
-        # self.geometry_data.loc[self.geometry_data.index[-1], "CGY"] = 2*self.geometry_data.loc[self.geometry_data.index[-2], "CGY"] - self.geometry_data.loc[self.geometry_data.index[-3], "CGY"]
-        # self.geometry_data.loc[self.geometry_data.index[-1], "CGZ"] = 2*self.geometry_data.loc[self.geometry_data.index[-2], "CGZ"] - self.geometry_data.loc[self.geometry_data.index[-3], "CGZ"]
-
         self.interpret_geom_data()
 
 

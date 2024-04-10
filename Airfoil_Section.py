@@ -10,7 +10,7 @@ from scipy.interpolate import interp1d
 # Airfoil construction class
 class Airfoil_Section():
     def __init__(self, airfoil_type1, airfoil_type2, transition, thickness_ratio, n, center = True):
-        self.n = n ## Todo: Change to n
+        self.n = n
         self.thickness_ratio = thickness_ratio
         self.transition = transition
         # print(transition)

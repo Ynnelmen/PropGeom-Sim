@@ -82,7 +82,7 @@ class Blade():
             cq.exporters.export(self.blade_solid, 'blade.step')
 
         if show:
-            # show_object(self.blade_solid) # TODO
+            show_object(self.blade_solid)
             pass
 
         return self.blade_solid
@@ -90,4 +90,4 @@ class Blade():
     def show_blade(self):
         if self.blade_solid is None:
             self.create_blade()
-        # show_object(self.blade_solid) #TODO
+        show_object(self.blade_solid)
