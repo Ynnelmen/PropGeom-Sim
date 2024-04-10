@@ -12,5 +12,5 @@ The propeller is exported as a .step to the local folder.
 
 # Usage instructions (in main.py):
 Select the APC propeller geometry file and change the filename variable to the path of the file.
-Set the hub geometry type to the propeller name or define the hub geometry manually.
+If necessary, define the hub geometry manually or set counterclockwise = False.
 Run the script!
