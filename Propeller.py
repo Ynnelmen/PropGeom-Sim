@@ -1,9 +1,5 @@
 import cadquery as cq
-import numpy as np
-from Airfoil_Section import Airfoil_Section
-# from ocp_vscode import *
-# from build123d import *
-from ocp_vscode import *
+from ocp_vscode import show_object
 
 class Propeller():
     def __init__(self, Blade, Hub, linear_interpolation=True, ccw=True):

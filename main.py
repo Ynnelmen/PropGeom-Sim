@@ -6,10 +6,9 @@ from APCReader import APCReader
 from Hub import Hub
 from Propeller import Propeller
 
-from ocp_vscode import *
+from ocp_vscode import show_object
 from datetime import datetime
 import cadquery as cq
-# from cq_editor import *
 import matplotlib
 matplotlib.use('TkAgg') # Needed to show plots in a separate window
 import matplotlib.pyplot as plt
@@ -46,7 +45,7 @@ linear_interpolation = False  ## Set to true for testing and faster processing. 
 # Run the script.
 # ########################################################################################################################
 ### CHANGE FILENAME HERE
-filename = os.getcwd() + r"\APC Propeller Geometry Data\10x6E-PERF.PE0"
+filename = os.getcwd() + r"\APC Propeller Geometry Data\10x55MR-PERF.PE0"
 ### SET HUB GEOMETRY HERE (or leave as is to infer from propeller name)
 infer_hub_geometry = True  # If true, hub geometry is inferred from the propeller name and overwrites the following values. If False, hub geometry has to be defined manually below
 outer_radius = 0.65 / 2
@@ -73,11 +72,18 @@ show_object(s)
 ### Create Propeller
 propeller = Propeller(blade, hub, linear_interpolation=linear_interpolation,
                       ccw=counterclockwise_rotation)
+# show_object(propeller.part)
+
+if isinstance(propeller.part, cq.Workplane):
+    propeller.part = propeller.part.objects[0].scale(25.4)  # Convert from inches to mm
+else:
+    propeller.part = propeller.part.scale(25.4)
+
 show_object(propeller.part)
 
 save_name = os.getcwd() + f"\\Generated Propeller Exports\\{propeller_name}"
 # cq.exporters.export(propeller.part, f"{save_name}.step")
-propeller.part.objects[0].exportStep(f"{propeller_name}.step", precision_mode=-1, write_pcurves=False)
+propeller.part.exportStep(f"{propeller_name}.step") #, precision_mode=-1, write_pcurves=False)
 # cq.exporters.export(propeller.part, f"{save_name}.stl")
 print("### Propeller exported ###")
 

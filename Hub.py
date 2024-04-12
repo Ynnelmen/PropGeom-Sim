@@ -1,8 +1,5 @@
 import cadquery as cq
 import numpy as np
-from Airfoil_Section import Airfoil_Section
-# from ocp_vscode import *
-# from build123d import *
 
 class Hub():
     def __init__(self, interpolation_points, outer_radius, inner_radius, thickness):
