@@ -12,7 +12,7 @@ The propeller is exported as a .step to the local folder.
 
 ## Usage instructions (in main.py):
 Select the APC propeller geometry file and change the filename variable to the path of the file.  
-If necessary, define the hub geometry manually or set counterclockwise = False. Select the desired quality via the number of interpolation points. Recommended: 50-100
+If necessary, define the hub geometry manually or set counterclockwise = False. Select the desired quality via the number of interpolation points. Recommended: 50-100  
 Run the script!
 
 ### Required Packages:
