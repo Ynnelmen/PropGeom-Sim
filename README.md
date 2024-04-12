@@ -14,3 +14,11 @@ The propeller is exported as a .step to the local folder.
 Select the APC propeller geometry file and change the filename variable to the path of the file.
 If necessary, define the hub geometry manually or set counterclockwise = False.
 Run the script!
+
+# Required Packages:
+> Numpy
+> Pandas
+> cadquery
+> matplotlib (optional)
+> ocp_vscode (optional for CAD visualization)
+> cq_editor (alternative to ocp_vscode)
