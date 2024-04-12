@@ -68,7 +68,7 @@ class Propeller():
         # except:
         #     pass
         self.part = self.complete_blade.union(self.blade2).union(self.hub.part)
-        self.part = self.part.faces("<Z").workplane().hole(self.hub.inner_radius*2)  # remake hole
+        self.part = self.part.faces(">Z").workplane().hole(self.hub.inner_radius*2)  # remake hole
 
         if not self.counterclockwise_rotation:
             self.part = self.part.mirror("XZ")

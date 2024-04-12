@@ -13,9 +13,9 @@ class Hub():
         y_offset = 0
 
         x_offset_ellipse = 0 #outer_radius*0.2
-        z_offset_ellipse = 0 #-thickness*0.05
+        z_offset_ellipse = -thickness*0.05
         y_scaler_ellipse = 0.99
-        z_scaler_ellipse = 0.99
+        z_scaler_ellipse = 0.98
         #Define Wires
         outer_circle = cq.Wire.makeCircle(radius=self.outer_radius, center=cq.Vector(0,y_offset,-self.thickness/2), normal=cq.Vector(0,0,1))
         inner_circle = cq.Wire.makeCircle(radius=self.inner_radius, center=cq.Vector(0,y_offset,-self.thickness/2), normal=cq.Vector(0,0,1))
@@ -25,7 +25,7 @@ class Hub():
         part = cq.Workplane(inPlane='XY', origin=((0,0,-self.thickness/2+z_offset)))
         # part = cq.Workplane(inPlane='XY', origin=((0,0,-thickness)))
         part = part.circle(self.outer_radius)
-        part = part.circle(self.inner_radius)
+        # part = part.circle(self.inner_radius)
         part = part.extrude(self.thickness)
 
         # part = part.copyWorkplane(cq.Workplane("YZ", origin=(outer_radius+0.00001,0,0)))

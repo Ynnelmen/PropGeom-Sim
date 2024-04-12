@@ -24,12 +24,15 @@ hub_geometry_types = {
                 "C-PERF": [1/2, 5/16, 0.56],
                 }
 
-interpolation_points = 100
+interpolation_points = 15 ## Number of Points to define each, the lower and upper side of the airfoil. Total number of points per airfoil is 2*interpolation_points
+### this markably impacts filesize and to an extend processing speed. Quality (especially around leading edge) decreases at around 20 points
+### Lofts are automatically splining to points, so the general shape is preserved even with fewer points, however then the shape begins to deviate from the with more points. If super low filesize is crucial, this can be reduced to 5-10 points
 counterclockwise_rotation = True  ## if false, propeller is mirrored
 linear_interpolation = False  ## Set to true for testing and faster processing. Products are not linearly interpolated
 ########################################################################################################################
 # READ ME
-# This script generates a propeller.step from an APC propeller geometry file. The propeller is generated in 3 parts: Hub, Blade and Propeller.
+# This script generates a propeller.step from an APC propeller geometry file as found here: https://www.apcprop.com/technical-information/file-downloads/.
+# The propeller is generated in 3 parts: Hub, Blade and Propeller.
 # (Visualization via ocp_Viewer (Visual Studio Code only) or CQ-Editor)
 # The hub geometry is generated based on the propeller name. The hub geometry can also be defined manually if inferred incorrectly.
 # The blade is generated based on the APC propeller geometry file. Supported airfoil types are NACA, E63 and CLARK-Y.
@@ -43,9 +46,9 @@ linear_interpolation = False  ## Set to true for testing and faster processing. 
 # Run the script.
 # ########################################################################################################################
 ### CHANGE FILENAME HERE
-filename = os.getcwd() + r"\APC Propeller Geometry Data\10x7E-PERF.PE0"
+filename = os.getcwd() + r"\APC Propeller Geometry Data\10x6E-PERF.PE0"
 ### SET HUB GEOMETRY HERE (or leave as is to infer from propeller name)
-infer_hub_geometry = True  # If true, hub geometry is inferred from the propeller name and overwrites the following values. If False, hub geometry has to be defined manually
+infer_hub_geometry = True  # If true, hub geometry is inferred from the propeller name and overwrites the following values. If False, hub geometry has to be defined manually below
 outer_radius = 0.65 / 2
 inner_radius = 0.15
 thickness = 0.35
@@ -74,9 +77,10 @@ show_object(propeller.part)
 
 save_name = os.getcwd() + f"\\Generated Propeller Exports\\{propeller_name}"
 # cq.exporters.export(propeller.part, f"{save_name}.step")
-cq.exporters.export(propeller.part, f"{propeller_name}.step")
-cq.exporters.export(propeller.part, f"{save_name}.stl")
+propeller.part.objects[0].exportStep(f"{propeller_name}.step", precision_mode=-1, write_pcurves=False)
+# cq.exporters.export(propeller.part, f"{save_name}.stl")
 print("### Propeller exported ###")
+
 
 ### test export
 # test_part = cq.importers.importStep("propeller.step")
@@ -84,15 +88,16 @@ print("### Propeller exported ###")
 
 
 # TODO:
-# Add more airfoil types. Only NACA, E63 and CLARK-Y are implemented
-# Hub dimensions have to be defined manually. Find possible connections to automate
+# Add more airfoil types. Only NACA, E63 and CLARK-Y are implemented. However, most APC propellers use only these airfoils.
+# RESOLVED: Hub dimensions have to be defined manually. Find possible connections to automate
 
 # Known Deviations from Product/Manual
 # last airfoil is shifted in X and Y to match trailing edge of second last airfoil (by 90%). This is an arbitrary shift. Find a better way to finish the blade at the outer radius
 # RESOLVED (Probably): Transition part is simple loft between last airfoil and ellipse at hub center. However, products have better transition.
-# Transition part is sometimes exceeding the upper hub surface, which is not observed on products.
+# Transition part is sometimes exceeding the upper hub surface, which is not observed on products. -> Ellipse is shifted in Z (-thickness*0.05) to avoid this.
 # Transition includes a second hub_edge, which is a copy of the first hub_edge with a small offset in X for a more consistent loft. This has been implemented to more resemble to the product but is not part of the manual.
 # Propeller has chamfers at the hub. This is not implemented
 
 # Potential Issues:
 # Loft shapes can sometimes (strongly) change after unions...?
+# Export Filesize is large (~50-70MB). This is likely due to the high number of faces in the lofts. This can be reduced by reducing the number of interpolation points. However, this will also reduce the quality of the propeller.
