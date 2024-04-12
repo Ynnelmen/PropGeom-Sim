@@ -28,6 +28,7 @@ interpolation_points = 15 ## Number of Points to define each, the lower and uppe
 ### Lofts are automatically splining to points, so the general shape is preserved even with fewer points, however then the shape begins to deviate from the with more points. If super low filesize is crucial, this can be reduced to 5-10 points
 counterclockwise_rotation = True  ## if false, propeller is mirrored
 linear_interpolation = False  ## Set to true for testing and faster processing. Products are not linearly interpolated
+rotation_axis_is_X = True ## Default Axis of rotation is around Z. If true, propeller is rotated such that axis of rotation is around X
 ########################################################################################################################
 # READ ME
 # This script generates a propeller.step from an APC propeller geometry file as found here: https://www.apcprop.com/technical-information/file-downloads/.
@@ -45,7 +46,7 @@ linear_interpolation = False  ## Set to true for testing and faster processing. 
 # Run the script.
 # ########################################################################################################################
 ### CHANGE FILENAME HERE
-filename = os.getcwd() + r"\APC Propeller Geometry Data\10x55MR-PERF.PE0"
+filename = os.getcwd() + r"\APC Propeller Geometry Data\10x6-PERF.PE0"
 ### SET HUB GEOMETRY HERE (or leave as is to infer from propeller name)
 infer_hub_geometry = True  # If true, hub geometry is inferred from the propeller name and overwrites the following values. If False, hub geometry has to be defined manually below
 outer_radius = 0.65 / 2
@@ -60,30 +61,33 @@ hubtype = ''.join([i for i in propeller_name.split("x")[1] if not i.isdigit()])
 if infer_hub_geometry:
     outer_radius, inner_radius, thickness = hub_geometry_types[hubtype]
 hub = Hub(interpolation_points*2-1, outer_radius, inner_radius, thickness)
-show_object(hub.part)
+# show_object(hub.part)
 print("### Hub created ###")
 
 ### Create Blade
 apcreader = APCReader(filename)
 blade = Blade(apcreader, hub, interpolation_points, linear_interpolation=linear_interpolation)
 s = blade.create_blade(export=False)
-show_object(s)
+# show_object(s)
 
 ### Create Propeller
 propeller = Propeller(blade, hub, linear_interpolation=linear_interpolation,
                       ccw=counterclockwise_rotation)
-# show_object(propeller.part)
+
 
 if isinstance(propeller.part, cq.Workplane):
-    propeller.part = propeller.part.objects[0].scale(25.4)  # Convert from inches to mm
+    propeller.part.objects[0] = propeller.part.objects[0].scale(25.4)  # Convert from inches to mm
 else:
     propeller.part = propeller.part.scale(25.4)
+
+if rotation_axis_is_X:
+    propeller.part = propeller.part.rotate((0,0,0), (0,1,0), 90)
 
 show_object(propeller.part)
 
 save_name = os.getcwd() + f"\\Generated Propeller Exports\\{propeller_name}"
 # cq.exporters.export(propeller.part, f"{save_name}.step")
-propeller.part.exportStep(f"{propeller_name}.step") #, precision_mode=-1, write_pcurves=False)
+propeller.part.objects[0].exportStep(f"{propeller_name}.step") #, precision_mode=-1, write_pcurves=False)
 # cq.exporters.export(propeller.part, f"{save_name}.stl")
 print("### Propeller exported ###")
 
