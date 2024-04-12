@@ -16,9 +16,9 @@ If necessary, define the hub geometry manually or set counterclockwise = False.
 Run the script!
 
 # Required Packages:
-> Numpy
-> Pandas
-> cadquery
-> matplotlib (optional)
-> ocp_vscode (optional for CAD visualization)
-> cq_editor (alternative to ocp_vscode)
+Numpy
+Pandas
+cadquery
+matplotlib (optional)
+ocp_vscode (optional for CAD visualization)
+cq_editor (alternative to ocp_vscode)
