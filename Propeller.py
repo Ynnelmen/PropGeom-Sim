@@ -28,9 +28,9 @@ class Propeller():
         # show_object(blade_edge)
         self.transition_part = cq.Solid.makeLoft([hub_edge, hub_edge2, blade_edge1, blade_edge2, blade_edge3], self.linear_interpolation)
         print("### Transition part created ###")
-        show_object(self.transition_part)
+        # show_object(self.transition_part)
         self.complete_blade = self.blade.blade_solid.union(self.transition_part)
-        show_object(self.complete_blade)
+        # show_object(self.complete_blade)
         return self.transition_part
     
     def create_2nd_blade(self):
@@ -38,7 +38,7 @@ class Propeller():
         # self.transition2 = self.transition_part.rotate((0,0,0), (0,0,1), 180)
         self.blade2 = self.complete_blade.rotate((0,0,0), (0,0,1), 180)
         # show_object(self.transition2)
-        show_object(self.blade2)
+        # show_object(self.blade2)
         print("### 2nd Blade created ###")
 
     

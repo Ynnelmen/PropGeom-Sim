@@ -93,7 +93,7 @@ print("### Propeller exported ###")
 
 
 ### test export
-# test_part = cq.importers.importStep("propeller.step")
+# test_part = cq.importers.importStep(f"{filename}.step")
 # show_object(test_part)
 
 
