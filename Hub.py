@@ -19,11 +19,11 @@ class Hub():
         #Create Solid Object from Wires
         base_solid = cq.Solid.extrudeLinear(outer_circle, [inner_circle], cq.Vector(0,0,self.thickness))
 
-        part = cq.Workplane(inPlane='XY', origin=((0,0,-self.thickness/2+z_offset)))
-        # part = cq.Workplane(inPlane='XY', origin=((0,0,-thickness)))
+        # The created hub is twice as thick and will be cut later on...
+        # part = cq.Workplane(inPlane='XY', origin=((0,0,-self.thickness/2+z_offset)))
+        part = cq.Workplane(inPlane='XY', origin=((0,0,-thickness)))
         part = part.circle(self.outer_radius)
-        # part = part.circle(self.inner_radius)
-        part = part.extrude(self.thickness)
+        part = part.extrude(self.thickness*2)
 
         # part = part.copyWorkplane(cq.Workplane("YZ", origin=(outer_radius+0.00001,0,0)))
         # part = part.ellipse(outer_radius*0.9, thickness*0.49)

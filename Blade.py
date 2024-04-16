@@ -58,13 +58,18 @@ class Blade():
         shift_x = airfoil_sections[-2].X[-1] - airfoil_sections[-1].X[-1]
         shift_y = airfoil_sections[-2].Y[-1] - airfoil_sections[-1].Y[-1]
         airfoil_sections[-1].translate([shift_x*0.9, shift_y*0.99]) #TODO: 0.9 and 0.99 are arbitrary values
+        # sharpen last airfoil to a point
+        # airfoil_sections[-1].X = np.ones(len(airfoil_sections[-1].X)) * shift_x*0.9
+        # airfoil_sections[-1].Y = np.ones(len(airfoil_sections[-1].Y)) * shift_y*0.99
 
+        # remove first airfoil from list
+        airfoil_sections = airfoil_sections[1:]
 
         # Generate splines from aifoil data
         self.spline_wire_list = []
         # self.spline_wire_list.append(hub_edge) ### DOES NOT WORK
 
-        for i, rad_pos in enumerate(self.radial_position):
+        for i, rad_pos in enumerate(self.radial_position[1:]):
             self.airfoil_matrix = np.array([airfoil_sections[i].X, airfoil_sections[i].Y, -rad_pos*np.ones(len(airfoil_sections[i].X))]).T
             self.X, self.Y, self.Z = np.matmul(self.airfoil_matrix, self.inverse_coordinate_rotation_matrix).T
             spline_edge = cq.Edge.makeSpline([cq.Vector(p) for p in zip(self.X, self.Y, self.Z)])

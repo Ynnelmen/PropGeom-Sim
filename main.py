@@ -23,7 +23,7 @@ hub_geometry_types = {
                 "C-PERF": [1/2, 5/16, 0.56],
                 }
 
-interpolation_points = 15 ## Number of Points to define each, the lower and upper side of the airfoil. Total number of points per airfoil is 2*interpolation_points
+interpolation_points = 50 ## Number of Points to define each, the lower and upper side of the airfoil. Total number of points per airfoil is 2*interpolation_points
 ### this markably impacts filesize and to an extend processing speed. Quality (especially around leading edge) decreases at around 20 points
 ### Lofts are automatically splining to points, so the general shape is preserved even with fewer points, however then the shape begins to deviate from the with more points. If super low filesize is crucial, this can be reduced to 5-10 points
 counterclockwise_rotation = True  ## if false, propeller is mirrored
@@ -46,7 +46,7 @@ rotation_axis_is_X = True ## Default Axis of rotation is around Z. If true, prop
 # Run the script.
 # ########################################################################################################################
 ### CHANGE FILENAME HERE
-filename = os.getcwd() + r"\APC Propeller Geometry Data\10x6-PERF.PE0"
+filename = os.getcwd() + r"\APC Propeller Geometry Data\10x7E-PERF.PE0"
 ### SET HUB GEOMETRY HERE (or leave as is to infer from propeller name)
 infer_hub_geometry = True  # If true, hub geometry is inferred from the propeller name and overwrites the following values. If False, hub geometry has to be defined manually below
 outer_radius = 0.65 / 2
@@ -73,6 +73,7 @@ s = blade.create_blade(export=False)
 ### Create Propeller
 propeller = Propeller(blade, hub, linear_interpolation=linear_interpolation,
                       ccw=counterclockwise_rotation)
+propeller.cleanup()
 
 
 if isinstance(propeller.part, cq.Workplane):
@@ -88,6 +89,7 @@ show_object(propeller.part)
 save_name = os.getcwd() + f"\\Generated Propeller Exports\\{propeller_name}"
 # cq.exporters.export(propeller.part, f"{save_name}.step")
 propeller.part.objects[0].exportStep(f"{propeller_name}.step") #, precision_mode=-1, write_pcurves=False)
+propeller.part.objects[0].exportStl(f"{propeller_name}.stl") #, precision_mode=-1, write_pcurves=False)
 # cq.exporters.export(propeller.part, f"{save_name}.stl")
 print("### Propeller exported ###")
 

@@ -11,6 +11,8 @@ class Propeller():
 
         self.create_propeller()
 
+        # self.cleanup()
+
     def create_propeller(self):
         self.create_transition()
         self.create_2nd_blade()
@@ -64,12 +66,22 @@ class Propeller():
         # except:
         #     pass
         self.part = self.complete_blade.union(self.blade2).union(self.hub.part)
-        self.part = self.part.faces(">Z").workplane().hole(self.hub.inner_radius*2)  # remake hole
-
-        if not self.counterclockwise_rotation:
-            self.part = self.part.mirror("XZ")
 
         print("### Propeller created ###")
 
         return self.part
+
+    def cleanup(self):
+        self.part = self.part.faces(">Z").workplane().hole(self.hub.inner_radius*2)  # remake hole
+        self.part = self.part.faces("<Z").workplane(invert=True).circle(self.hub.outer_radius).extrude(self.hub.thickness/2, combine="cut") # remove "debris" above hub
+        self.part = self.part.faces(">Z").workplane(invert=True).circle(self.hub.outer_radius).extrude(self.hub.thickness/2, combine="cut") # remove "debris" below hub
+
+        if not self.counterclockwise_rotation:
+            self.part = self.part.mirror("XZ")
+
+        print("### Cleanup complete ###")
+
+        return self.part
+
+
     
