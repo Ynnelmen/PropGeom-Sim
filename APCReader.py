@@ -8,7 +8,7 @@ class APCReader():
 
         self.geometry_data = self.read_geom_data(filename)
         # self.geometry_data = self.geometry_data[:-1]  ## TODO  (Skipping size 0 airfoil)
-        self.geometry_data.loc[self.geometry_data.index[-1], "CHORD"] = 0.1   # TODO (Arbitrary value for last airfoil)
+        self.geometry_data.loc[self.geometry_data.index[-1], "CHORD"] = 0.1   # (Arbitrary value for last airfoil) - kept this way to avoid step export error
         self.interpret_geom_data()
 
 
