@@ -23,7 +23,7 @@ hub_geometry_types = {
                 "C-PERF": [1/2, 5/16, 0.56],
                 }
 
-interpolation_points = 50 ## Number of Points to define each, the lower and upper side of the airfoil. Total number of points per airfoil is 2*interpolation_points
+interpolation_points = 35 ## Number of Points to define each, the lower and upper side of the airfoil. Total number of points per airfoil is 2*interpolation_points
 ### this markably impacts filesize and to an extend processing speed. Quality (especially around leading edge) decreases at around 20 points
 ### Lofts are automatically splining to points, so the general shape is preserved even with fewer points, however then the shape begins to deviate from the with more points. If super low filesize is crucial, this can be reduced to 5-10 points
 counterclockwise_rotation = True  ## if false, propeller is mirrored
@@ -56,6 +56,7 @@ thickness = 0.35
 
 propeller_name = os.path.basename(filename).split(".")[0]
 hubtype = ''.join([i for i in propeller_name.split("x")[1] if not i.isdigit()])
+propeller_name = propeller_name + f"_IP{interpolation_points}_01last_airfoil"
 
 ### Create Hub
 if infer_hub_geometry:
@@ -88,8 +89,19 @@ show_object(propeller.part)
 
 save_name = os.getcwd() + f"\\Generated Propeller Exports\\{propeller_name}"
 # cq.exporters.export(propeller.part, f"{save_name}.step")
-propeller.part.objects[0].exportStep(f"{propeller_name}.step") #, precision_mode=-1, write_pcurves=False)
-propeller.part.objects[0].exportStl(f"{propeller_name}.stl") #, precision_mode=-1, write_pcurves=False)
+propeller.part.objects[0].exportStep(f"{propeller_name}_default.step") #, precision_mode=-1, write_pcurves=False)
+# propeller.part.val().exportStep(f"{propeller_name}_val.step") #, precision_mode=-1, write_pcurves=False)
+# cq.exporters.export(propeller.part.objects[0], f"{propeller_name}_prec2_pc_false.step", opt={'precision_mode': 2, 'write_pcurves': False})
+# propeller.part.objects[0].exportStl(f"{propeller_name}.stl") #, precision_mode=-1, write_pcurves=False)
+
+# Export STEP file with OCP
+# from OCP.STEPCAFControl import STEPCAFControl_Writer
+# from OCP.XSControl import XSControl_WorkSession
+# writer = STEPCAFControl_Writer(XSControl_WorkSession(), False)
+# writer.Transfer(propeller.part.objects[0], 0)
+# writer.Write(f"{propeller_name}.step")
+
+
 # cq.exporters.export(propeller.part, f"{save_name}.stl")
 print("### Propeller exported ###")
 

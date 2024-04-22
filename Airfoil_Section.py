@@ -203,6 +203,10 @@ class Airfoil_Section():
     def interpolate_airfoil(self, xy):
         ''' xy = np.array '''
         upper, lower = self.separate_airfoil_data(xy)
+        upper[0] = [0, 0]
+        lower[0] = [0, 0]
+        upper[-1] = [1, 0]
+        lower[-1] = [1, 0]
 
         f_upper = interp1d(upper[:,0], upper[:,1], kind='linear', fill_value='extrapolate')
         f_lower = interp1d(lower[:,0], lower[:,1], kind='linear', fill_value='extrapolate')

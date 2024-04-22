@@ -69,12 +69,25 @@ class Blade():
         self.spline_wire_list = []
         # self.spline_wire_list.append(hub_edge) ### DOES NOT WORK
 
+        # 3d plot
+        import matplotlib.pyplot as plt
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+
         for i, rad_pos in enumerate(self.radial_position[1:]):
             self.airfoil_matrix = np.array([airfoil_sections[i].X, airfoil_sections[i].Y, -rad_pos*np.ones(len(airfoil_sections[i].X))]).T
             self.X, self.Y, self.Z = np.matmul(self.airfoil_matrix, self.inverse_coordinate_rotation_matrix).T
+            # print(self.X, self.Y, self.Z)
+            # print("Shape: ", self.X.shape, self.Y.shape, self.Z.shape)
+
+            ax.plot(self.X, self.Y, self.Z)
+
+
             spline_edge = cq.Edge.makeSpline([cq.Vector(p) for p in zip(self.X, self.Y, self.Z)])
             # show_object(spline_edge)
             self.spline_wire_list.append(cq.Wire.assembleEdges([spline_edge]))
+
+        plt.show()
 
         # self.blade_solid = cq.Solid.makeLoft(self.spline_wire_list, self.linear_interpolation)
         self.blade_solid = cq.Workplane().add(self.spline_wire_list).toPending().loft(ruled =self.linear_interpolation)
