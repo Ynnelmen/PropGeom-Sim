@@ -21,32 +21,6 @@ class APCReader():
 
         # read and parse file
         with open(filename, "r") as f:
-            # for index, line in enumerate(f):
-            #     match index:
-            #         case 0:
-            #             prop_label = line[0:5]
-            #         case 25:
-            #             prop_attributes = line.split()
-            #         case 26:
-            #             prop_attributes_units = line.split()
-            #         case 67:
-            #             prop_radius = float(line[10:14])
-            #         case 68:
-            #             prop_hub_tra = float(line[10:14])
-            #         case 69:
-            #             prop_nblades = int(line[10:12])
-            #         case 102:
-            #             prop_airfoil_type_rad_1 = float(line[12:16])
-            #             prop_airfoil_type_1 = "".join(line[18:25].split())
-            #         case 103:
-            #             prop_airfoil_type_rad_2 = float(line[12:16])
-            #             prop_airfoil_type_2 = "".join(line[18:25].split())
-            #
-            #     if index > 27 and index < 65:
-            #         line_float = []
-            #         for item in line.split():
-            #             line_float.append(float(item))
-            #         geometry_data.append(line_float)
             for line in f:
                 # Detect start of the airfoil summary data table
                 if line.strip().startswith('STATION'):
@@ -113,10 +87,6 @@ class APCReader():
         self.z_trans = self.geometry_data['CGZ'].to_numpy()
         self.x_trans = np.zeros(len(self.y_trans))  # no translation in radial direction
         self.blade_trans = np.array([self.x_trans, self.y_trans, self.z_trans]).T
-
-        # # Manipulation of last airfoil
-        # self.chord_length[-1] = 0.1
-        # self.
 
         self.airfoil_trans = np.dot(self.blade_trans, self.coordinate_rotation_matrix)
         self.xa_trans = self.airfoil_trans[:, 0]

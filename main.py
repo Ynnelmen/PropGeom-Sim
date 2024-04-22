@@ -101,12 +101,10 @@ propeller.part.objects[0].exportStl(f"{propeller_name}.stl") #, precision_mode=-
 # writer.Transfer(propeller.part.objects[0], 0)
 # writer.Write(f"{propeller_name}.step")
 
-
-# cq.exporters.export(propeller.part, f"{save_name}.stl")
 print("### Propeller exported ###")
 
 
-### test export
+### test export with import
 # test_part = cq.importers.importStep(f"{filename}.step")
 # show_object(test_part)
 

@@ -37,12 +37,7 @@ class Blade():
         
 
     def create_blade(self, export=False, show=False):
-        # hub_ellipse_spline0 = cq.Edge.makeSpline(
-        #     [cq.Vector(p) for p in zip(self.hub.ellipse_cord_X-, self.hub.ellipse_cord_Y, self.hub.ellipse_cord_Z)])
-        # hub_ellipse_spline = cq.Edge.makeSpline([cq.Vector(p) for p in zip(self.hub.ellipse_cord_X, self.hub.ellipse_cord_Y, self.hub.ellipse_cord_Z)])
-        # hub_ellipse_spline2 = cq.Edge.makeSpline([cq.Vector(p) for p in
-        #                                           zip(self.hub.ellipse_cord_X+0.1, self.hub.ellipse_cord_Y,
-        #                                               self.hub.ellipse_cord_Z)])
+        ## Create hub ellipses for transition to Blade
         self.hub_ellipses = []
         self.hub_wires = []
         for x_dist in np.linspace(self.hub_ellipses_revert_distance, 0, 4):
@@ -73,12 +68,9 @@ class Blade():
         shift_x = airfoil_sections[-2].X[-1] - airfoil_sections[-1].X[-1]
         shift_y = airfoil_sections[-2].Y[-1] - airfoil_sections[-1].Y[-1]
         airfoil_sections[-1].translate([shift_x*0.9, shift_y*0.99]) #TODO: 0.9 and 0.99 are arbitrary values
-        # sharpen last airfoil to a point
-        # airfoil_sections[-1].X = np.ones(len(airfoil_sections[-1].X)) * shift_x*0.9
-        # airfoil_sections[-1].Y = np.ones(len(airfoil_sections[-1].Y)) * shift_y*0.99
 
-        # remove first airfoil from list, such that it is not duplicated with the transition part
-        airfoil_sections = airfoil_sections[1:]
+        # remove first airfoil from list, such that it is not duplicated with the transition part # not needed when integrating transition part
+        # airfoil_sections = airfoil_sections[1:]
 
         self.spline_wire_list = []
         for i in self.hub_wires:
@@ -103,7 +95,6 @@ class Blade():
 
         # plt.show()
 
-        # self.blade_solid = cq.Solid.makeLoft(self.spline_wire_list, self.linear_interpolation)
         self.blade_solid = cq.Workplane().add(self.spline_wire_list).toPending().loft(ruled =self.linear_interpolation)
         self.blade_solid = self.blade_solid.faces("<X").workplane(invert=False).circle(2).extrude(self.hub_ellipses_revert_distance, combine="cut")
         print("### Blade created ###")
