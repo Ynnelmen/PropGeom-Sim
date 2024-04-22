@@ -11,6 +11,8 @@ class Blade():
         
         self.blade_solid = None
 
+        self.hub_ellipses_revert_distance = -0.1  # negative!
+
         self.hub = hub
         self.APCReader = APCReader
         self.interpolation_points = interpolation_points
@@ -35,9 +37,22 @@ class Blade():
         
 
     def create_blade(self, export=False, show=False):
-        hub_ellipse_spline = cq.Edge.makeSpline([cq.Vector(p) for p in zip(self.hub.ellipse_cord_X, self.hub.ellipse_cord_Y, self.hub.ellipse_cord_Z)])
-        hub_edge = cq.Wire.assembleEdges([hub_ellipse_spline])
-        # show_object(hub_edge)
+        # hub_ellipse_spline0 = cq.Edge.makeSpline(
+        #     [cq.Vector(p) for p in zip(self.hub.ellipse_cord_X-, self.hub.ellipse_cord_Y, self.hub.ellipse_cord_Z)])
+        # hub_ellipse_spline = cq.Edge.makeSpline([cq.Vector(p) for p in zip(self.hub.ellipse_cord_X, self.hub.ellipse_cord_Y, self.hub.ellipse_cord_Z)])
+        # hub_ellipse_spline2 = cq.Edge.makeSpline([cq.Vector(p) for p in
+        #                                           zip(self.hub.ellipse_cord_X+0.1, self.hub.ellipse_cord_Y,
+        #                                               self.hub.ellipse_cord_Z)])
+        self.hub_ellipses = []
+        self.hub_wires = []
+        for x_dist in np.linspace(self.hub_ellipses_revert_distance, 0, 4):
+            el = cq.Edge.makeSpline([cq.Vector(p) for p in zip(self.hub.ellipse_cord_X + x_dist, self.hub.ellipse_cord_Y, self.hub.ellipse_cord_Z)])
+            # show_object(el)
+            self.hub_ellipses.append(el)
+            self.hub_wires.append(cq.Wire.assembleEdges([el]))
+
+        # self.t = cq.Workplane().add(self.hub_wires).toPending().loft(ruled=self.linear_interpolation)
+        # show_object(self.t)
 
         airfoil_sections = []
         for i in range(len(self.chord_length)):
@@ -62,35 +77,35 @@ class Blade():
         # airfoil_sections[-1].X = np.ones(len(airfoil_sections[-1].X)) * shift_x*0.9
         # airfoil_sections[-1].Y = np.ones(len(airfoil_sections[-1].Y)) * shift_y*0.99
 
-        # remove first airfoil from list
+        # remove first airfoil from list, such that it is not duplicated with the transition part
         airfoil_sections = airfoil_sections[1:]
 
-        # Generate splines from aifoil data
         self.spline_wire_list = []
-        # self.spline_wire_list.append(hub_edge) ### DOES NOT WORK
+        for i in self.hub_wires:
+            self.spline_wire_list.append(i)
 
         # 3d plot
-        import matplotlib.pyplot as plt
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
+        # import matplotlib.pyplot as plt
+        # fig = plt.figure()
+        # ax = fig.add_subplot(111, projection='3d')
 
-        for i, rad_pos in enumerate(self.radial_position[1:]):
+        for i, rad_pos in enumerate(self.radial_position[:-1]):
             self.airfoil_matrix = np.array([airfoil_sections[i].X, airfoil_sections[i].Y, -rad_pos*np.ones(len(airfoil_sections[i].X))]).T
             self.X, self.Y, self.Z = np.matmul(self.airfoil_matrix, self.inverse_coordinate_rotation_matrix).T
             # print(self.X, self.Y, self.Z)
             # print("Shape: ", self.X.shape, self.Y.shape, self.Z.shape)
 
-            ax.plot(self.X, self.Y, self.Z)
-
+            # ax.plot(self.X, self.Y, self.Z)
 
             spline_edge = cq.Edge.makeSpline([cq.Vector(p) for p in zip(self.X, self.Y, self.Z)])
             # show_object(spline_edge)
             self.spline_wire_list.append(cq.Wire.assembleEdges([spline_edge]))
 
-        plt.show()
+        # plt.show()
 
         # self.blade_solid = cq.Solid.makeLoft(self.spline_wire_list, self.linear_interpolation)
         self.blade_solid = cq.Workplane().add(self.spline_wire_list).toPending().loft(ruled =self.linear_interpolation)
+        self.blade_solid = self.blade_solid.faces("<X").workplane(invert=False).circle(2).extrude(self.hub_ellipses_revert_distance, combine="cut")
         print("### Blade created ###")
 
         
