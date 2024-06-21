@@ -2,75 +2,37 @@ import cadquery as cq
 from ocp_vscode import show_object
 
 class Propeller():
-    def __init__(self, Blade, Hub, linear_interpolation=True, ccw=True):
-        self.blade = Blade
+    def __init__(self, Blade1, Hub, Blade2=None, linear_interpolation=True, ccw=True, attachment_points=False):
+        self.blade1 = Blade1
+        self.blade2 = Blade2
         self.hub = Hub
+
+        if self.blade2 is None:
+            self.create_2nd_blade() # duplicate blade1, rotate 180 degrees
+        else:
+            self.blade2 = self.blade2.rotate((0,0,0), (0,0,1), 180)
         
         self.linear_interpolation = linear_interpolation
         self.counterclockwise_rotation = ccw
+        self.attachment_points = attachment_points
 
         self.create_propeller()
 
         # self.cleanup()
 
     def create_propeller(self):
-        # self.create_transition()
-        self.complete_blade = self.blade.blade_solid
-        self.create_2nd_blade()
         self.merge_parts()
-
-    def create_transition(self):
-        hub_ellipse_spline = cq.Edge.makeSpline([cq.Vector(p) for p in zip(self.hub.ellipse_cord_X, self.hub.ellipse_cord_Y, self.hub.ellipse_cord_Z)])
-        hub_edge = cq.Wire.assembleEdges([hub_ellipse_spline])
-        hub_ellipse_spline2 = cq.Edge.makeSpline([cq.Vector(p) for p in zip(self.hub.ellipse_cord_X+0.01, self.hub.ellipse_cord_Y, self.hub.ellipse_cord_Z)])
-        hub_edge2 = cq.Wire.assembleEdges([hub_ellipse_spline2])
-        blade_edge1 = self.blade.spline_wire_list[0] # transtion part overlaps with airfoil for spline interpolation
-        blade_edge2 = self.blade.spline_wire_list[1]
-        blade_edge3 = self.blade.spline_wire_list[2]
-        # show_object(hub_edge)
-        # show_object(blade_edge)
-        self.transition_part = cq.Solid.makeLoft([hub_edge, hub_edge2, blade_edge1, blade_edge2, blade_edge3], self.linear_interpolation)
-        print("### Transition part created ###")
-        # show_object(self.transition_part)
-        self.complete_blade = self.blade.blade_solid.union(self.transition_part)
-        # show_object(self.complete_blade)
-        return self.transition_part
     
     def create_2nd_blade(self):
-        # self.blade2 = self.blade.blade_solid.rotate((0,0,0), (0,0,1), 180)
-        # self.transition2 = self.transition_part.rotate((0,0,0), (0,0,1), 180)
-        self.blade2 = self.complete_blade.rotate((0,0,0), (0,0,1), 180)
-        # show_object(self.transition2)
-        # show_object(self.blade2)
+        self.blade2 = self.blade1.rotate((0,0,0), (0,0,1), 180)
         print("### 2nd Blade created ###")
 
     
     def merge_parts(self):
-        # self.part = cq.Compound.makeCompound([self.blade.blade_solid, self.hub.part, self.transition_part])
-        # self.part1 = self.hub.part.union(self.transition_part)
-        # show_object(self.part1)
-        # print("### Hub and Transition merged ###")
-        # self.part2 = self.part1.union(self.blade.blade_solid)
-        # show_object(self.part2)
-        # print("### Blade merged ###")
-        # self.part3 = self.part2.union(self.transition2)
-        # show_object(self.part3)
-        # print("### Transition2 merged ###")
-        # self.part4 = self.part3.union(self.blade2)
-        # show_object(self.part4)
-        # print("### Blade2 merged ###")
-        # print("### Parts merged ###")
-        # self.part = self.part.workplane("XY", origin=(0,0,-1)).hole(self.hub.inner_radius*2)  # remake hole
-        # self.part = self.part4.faces("<Z").workplane().hole(self.hub.inner_radius*2)  # remake hole
-        # try:
-        #     self.part = self.part.workplane((0,0,1), origin=(0,0,-1)).hole(self.hub.inner_radius*2)  # remake hole
-        # except:
-        #     pass
-        self.part = self.complete_blade.union(self.blade2).union(self.hub.part)
-        show_object(self.part)
+        self.part = self.blade1.union(self.blade2).union(self.hub.part)
+        # show_object(self.part)
 
         print("### Propeller created ###")
-
         return self.part
 
     def cleanup(self):
@@ -78,8 +40,21 @@ class Propeller():
         self.part = self.part.faces("<Z").workplane(invert=True).circle(self.hub.outer_radius).extrude(self.hub.thickness/2, combine="cut") # remove "debris" above hub
         self.part = self.part.faces(">Z").workplane(invert=True).circle(self.hub.outer_radius).extrude(self.hub.thickness/2, combine="cut") # remove "debris" below hub
 
+
+        if self.attachment_points:
+            ap_exzenter_distance = 15/2/25.4  #radius in inch
+            pin_radius = 3/2/25.4
+            pin_length = self.hub.thickness+1  # throughhole
+
+            self.part = self.part.faces("<Z").workplane(invert=True).center(ap_exzenter_distance, 0).circle(pin_radius).extrude(
+                pin_length, combine="cut")
+            self.part = self.part.faces("<Z").workplane(invert=True).center(-2*ap_exzenter_distance, 0).circle(pin_radius).extrude(
+                pin_length, combine="cut")
+
+
         if not self.counterclockwise_rotation:
             self.part = self.part.mirror("XZ")
+
 
         print("### Cleanup complete ###")
 

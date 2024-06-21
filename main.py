@@ -46,36 +46,53 @@ rotation_axis_is_X = True ## Default Axis of rotation is around Z. If true, prop
 # Run the script.
 # ########################################################################################################################
 ### CHANGE FILENAME HERE
-filename = os.getcwd() + r"\APC Propeller Geometry Data\10x6E-PERF.PE0"
+filename = os.getcwd() + r"\APC Propeller Geometry Data\10x7E-PERF.PE0"
 ### SET HUB GEOMETRY HERE (or leave as is to infer from propeller name)
 infer_hub_geometry = True  # If true, hub geometry is inferred from the propeller name and overwrites the following values. If False, hub geometry has to be defined manually below
 outer_radius = 0.65 / 2
 inner_radius = 0.15
-thickness = 0.35
+thickness = 0.36
 ########################################################################################################################
 
 propeller_name = os.path.basename(filename).split(".")[0]
 hubtype = ''.join([i for i in propeller_name.split("x")[1] if not i.isdigit()])
-propeller_name = propeller_name + f"_IP{interpolation_points}_01last_airfoil"
+propeller_name = propeller_name + f"_IP{interpolation_points}_original2"
 
 ### Create Hub
 if infer_hub_geometry:
     outer_radius, inner_radius, thickness = hub_geometry_types[hubtype]
 hub = Hub(interpolation_points*2-1, outer_radius, inner_radius, thickness)
+hub.create_hub_geometry()
 # show_object(hub.part)
 print("### Hub created ###")
 
-### Create Blade
 apcreader = APCReader(filename)
-blade = Blade(apcreader, hub, interpolation_points, linear_interpolation=linear_interpolation)
+# Thickness Variation:
+max_mm = 0.05  #[mm] (outer radius)
+min_mm = 0.05  #[mm] (at innermost airfoil)
+thickness_variation_blade1 = np.linspace(max_mm, min_mm, num=len(apcreader.thickness_ratio))
+thickness_variation_blade2 = - thickness_variation_blade1  # +/-
+
+### Create Blade
+blade = Blade(apcreader, hub, interpolation_points, linear_interpolation=linear_interpolation,
+              thickness_variation=thickness_variation_blade1)
 s = blade.create_blade(export=False)
 show_object(s)
+### Create Blade2
+blade2 = Blade(apcreader, hub, interpolation_points, linear_interpolation=linear_interpolation,
+               thickness_variation=thickness_variation_blade2)
+s2 = blade2.create_blade(export=False)
+show_object(s2)
+
+#calculate volume of propeller
+v1 = blade.blade_solid.val().Volume()
+v2 = blade2.blade_solid.val().Volume()
+print(v1, v2, v1/v2)
 
 ### Create Propeller
-propeller = Propeller(blade, hub, linear_interpolation=linear_interpolation,
-                      ccw=counterclockwise_rotation)
+propeller = Propeller(blade.blade_solid, hub, Blade2=blade2.blade_solid, linear_interpolation=linear_interpolation,
+                      ccw=counterclockwise_rotation, attachment_points = True)
 propeller.cleanup()
-
 
 if isinstance(propeller.part, cq.Workplane):
     propeller.part.objects[0] = propeller.part.objects[0].scale(25.4)  # Convert from inches to mm
@@ -86,13 +103,15 @@ if rotation_axis_is_X:
     propeller.part = propeller.part.rotate((0,0,0), (0,1,0), 90)
 
 show_object(propeller.part)
-
+# # #
 save_name = os.getcwd() + f"\\Generated Propeller Exports\\{propeller_name}"
-# cq.exporters.export(propeller.part, f"{save_name}.step")
+# # # cq.exporters.export(propeller.part, f"{save_name}.step")
 propeller.part.objects[0].exportStep(f"{propeller_name}_default.step") #, precision_mode=-1, write_pcurves=False)
-# propeller.part.val().exportStep(f"{propeller_name}_val.step") #, precision_mode=-1, write_pcurves=False)
-# cq.exporters.export(propeller.part.objects[0], f"{propeller_name}_prec2_pc_false.step", opt={'precision_mode': 2, 'write_pcurves': False})
-propeller.part.objects[0].exportStl(f"{propeller_name}.stl") #, precision_mode=-1, write_pcurves=False)
+
+#
+# # propeller.part.val().exportStep(f"{propeller_name}_val.step", precision_mode=1, write_pcurves=False)
+# # cq.exporters.export(propeller.part.objects[0], f"{propeller_name}_cq_export.step", opt={'precision_mode': 2, 'write_pcurves': False})
+# propeller.part.objects[0].exportStl(f"{propeller_name}.stl") #, precision_mode=-1, write_pcurves=False)
 
 # Export STEP file with OCP
 # from OCP.STEPCAFControl import STEPCAFControl_Writer

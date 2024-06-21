@@ -7,10 +7,11 @@ class APCReader():
         self.coordinate_rotation_matrix = np.array([[0, 0, -1], [-1, 0, 0], [0, 1, 0]])
 
         self.geometry_data = self.read_geom_data(filename)
-        # self.geometry_data = self.geometry_data[:-1]  ## TODO  (Skipping size 0 airfoil)
-        self.geometry_data.loc[self.geometry_data.index[-1], "CHORD"] = 0.1   # (Arbitrary value for last airfoil) - kept this way to avoid step export error
-        self.interpret_geom_data()
 
+        self.geometry_data.loc[self.geometry_data.index[-1], "CHORD"] = 0.05   # (Arbitrary value for last airfoil) - kept this way to avoid step export error
+        self.second_last_airfoil_mediation_parameter = 0.3 ## lowers the cgz of the second last airfoil by 30% of the difference between the 3rd last and 2nd last airfoil cgz
+
+        self.interpret_geom_data()
 
     def read_geom_data(self, filename):
         # Read geometry data from APC
@@ -86,6 +87,9 @@ class APCReader():
         self.y_trans = self.geometry_data['CGY'].to_numpy()
         self.z_trans = self.geometry_data['CGZ'].to_numpy()
         self.x_trans = np.zeros(len(self.y_trans))  # no translation in radial direction
+
+        self.z_trans[-2] = self.z_trans[-3] * self.second_last_airfoil_mediation_parameter + self.z_trans[-2] * (1-self.second_last_airfoil_mediation_parameter)
+
         self.blade_trans = np.array([self.x_trans, self.y_trans, self.z_trans]).T
 
         self.airfoil_trans = np.dot(self.blade_trans, self.coordinate_rotation_matrix)

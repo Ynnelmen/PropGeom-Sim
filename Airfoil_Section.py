@@ -5,7 +5,9 @@ import matplotlib
 matplotlib.use('TkAgg')  # Switch to TkAgg backend, do this before importing pyplot
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
-
+# from XFoil import XFoil
+import neuralfoil as nf
+# import aerosandbox as asb
 
 # Airfoil construction class
 class Airfoil_Section():
@@ -24,8 +26,9 @@ class Airfoil_Section():
         self.X = None
         self.Y = None
 
-        self.initialize()
+        self.alpha_variation = np.linspace(-20, 20, 41)
 
+        self.initialize()
 
     def initialize(self):
         if self.transition == 0:
@@ -55,6 +58,7 @@ class Airfoil_Section():
                 case _:
                     raise ValueError(f"Invalid airfoil type: {airfoil_type}. Airfoil type might not be supported yet.")
         # print('Airfoil output:', self.X, self.Y)
+        # print("Shapes X, Y:", self.X.shape, self.Y.shape, self.X.argmin())
         if self.center:
             self.center_airfoil()
         return self.X, self.Y
@@ -126,6 +130,7 @@ class Airfoil_Section():
         self.y_chord = np.zeros(len(self.x_camber))
         self.X = np.concatenate((x_upper[::-1], x_lower[self.remove_trailing_double:]))
         self.Y = np.concatenate((y_upper[::-1], y_lower[self.remove_trailing_double:]))
+        # print("NACA airfoil output shapes x, y, x_camber, y_camber:", self.X.shape, self.Y.shape, self.x_camber.shape, self.y_camber.shape)
 
         return self.X, self.Y
 
@@ -162,11 +167,12 @@ class Airfoil_Section():
         return x_coords, y_coords
 
     def e63_airfoil(self):
-        self.max_thickness = 0.043
+        self.max_thickness = 0.0425
         file_loc = os.getcwd() + "\\airfoil_data\\e63_selig.txt"
         self.UIUC_selig_format_reader(file_loc)
 
         self.scale_across_chamber(self.thickness_ratio / self.max_thickness)
+        # print("scaled xy:", self.X, self.Y, self.X.argmin())
         return self.X, self.Y
 
     def clarky_airfoil(self):
@@ -188,16 +194,20 @@ class Airfoil_Section():
         self.x_chord = np.array([0, 1])
         self.y_chord = np.array([0, 0])
 
+        # print("UIUC_selig_format_reader output shapes x, y, x_camber, y_camber:", self.X.shape, self.Y.shape, self.x_camber.shape, self.y_camber.shape)
+        # print(self.X, self.Y)
+
         return self.X, self.Y, self.x_camber, self.y_camber
 
     def separate_airfoil_data(self, data):
         ''' data = np.array of x, y coordinates'''
-        upper = data[:data[:,0].argmin() + 1]
-        lower = data[data[:,0].argmin()+1:]
+        # this function separates the points in data into equally sized upper and lower arrays
+        upper = data[:data[:,0].argmin()+1]
+        lower = data[data[:,0].argmin():]
+        # print(data.shape, upper.shape, lower.shape, data[:,0].argmin())
         # print("Data shape:", data.shape)
         # print(upper, lower)
         # print("Upper shape:", upper.shape, "Lower shape:", lower.shape)
-
         return upper, lower
 
     def interpolate_airfoil(self, xy):
@@ -265,18 +275,25 @@ class Airfoil_Section():
         self.y_chord = self.y_chord * factor
 
     def scale_across_chamber(self, factor):
-        upper, lower = self.separate_airfoil_data(np.vstack((self.X, self.Y)).T)
-
-        yu_dist_from_chamber = upper[:, 1] - self.y_camber
-        yl_dist_from_chamber = lower[:, 1] - self.y_camber[1:]
+        yu_dist_from_chamber = self.Y[:self.n] - self.y_camber
+        yl_dist_from_chamber = self.Y[self.n-1:] - self.y_camber
         y_upper_new = self.y_camber + yu_dist_from_chamber * factor
-        y_lower_new = self.y_camber[1:] + yl_dist_from_chamber * factor
+        y_lower_new = self.y_camber + yl_dist_from_chamber * factor
+        # print("y_upper_new:", y_upper_new, "y_lower_new:", y_lower_new)
+        # print(self.X)
 
         # print("yu_dist_from_chamber:", yu_dist_from_chamber)
         # print("upper:", upper[:, 1])
 
-        self.Y = np.concatenate([y_upper_new, y_lower_new])
+        self.Y = np.concatenate([y_upper_new, y_lower_new[1:]])
         self.y_camber = self.y_camber * factor
+
+    def increase_thickness_across_chamber(self, increase_mm):
+        # increases the thickness of the airfoil by a flat mm value across the chamber
+        max_dist_from_chamber_mm = (self.y_camber - self.Y[self.n-1:]).max() * 25.4 # inches to mm
+        print(max_dist_from_chamber_mm)
+        factor = 1 + increase_mm / max_dist_from_chamber_mm
+        self.scale_across_chamber(factor)
 
 
     # method to rotate the airfoil coordinates (in plane)
@@ -300,7 +317,6 @@ class Airfoil_Section():
     def getChordMidPoint(self):
         return [self.x_chord[int(self.n / 2)], self.y_chord[int(self.n / 2)]]
 
-
     def getCamberMidPoint(self):
         return [self.x_camber[int(self.n / 2)], self.y_camber[int(self.n / 2)]]
     
@@ -308,6 +324,7 @@ class Airfoil_Section():
         # Calculate the centroid
         x = self.X
         y = self.Y
+        # print("X, Y shapes:", x.shape, y.shape)
         A = 0.5 * np.sum(x[:-1] * y[1:] - x[1:] * y[:-1])
         Cx = (1 / (6 * A)) * np.sum((x[:-1] + x[1:]) * (x[:-1] * y[1:] - x[1:] * y[:-1]))
         Cy = (1 / (6 * A)) * np.sum((y[:-1] + y[1:]) * (x[:-1] * y[1:] - x[1:] * y[:-1]))
@@ -316,20 +333,25 @@ class Airfoil_Section():
         return self.X, self.Y
 
     ########### Airfoil visualization functions ###########
-    def plot_airfoil(self, show=True, save=False, filename="airfoil.png"):
-        try:
-            plt.plot(self.X1, self.Y1, label = self.airfoil_type1)
-        except:
-            pass
-        try:
-            plt.plot(self.X2, self.Y2, label = self.airfoil_type2)
-        except:
-            pass
+    def plot_airfoil(self, show=True, save=False, filename="airfoil.png", chord=True, camber=True, interpolated_only=False):
+        if not interpolated_only:
+            try:
+                plt.plot(self.X1, self.Y1, label = self.airfoil_type1)
+            except:
+                pass
+            try:
+                plt.plot(self.X2, self.Y2, label = self.airfoil_type2)
+            except:
+                pass
         try:
             plt.plot(self.X, self.Y, label = "Interpolated")
         except:
             pass
-        # plt.axis('equal')
+        if camber:
+            plt.plot(self.x_camber, self.y_camber, label = "Camber")
+        if chord:
+            plt.plot(self.x_chord, self.y_chord, label = "Chord")
+        plt.axis('equal')
         plt.title(f"Airfoil: {self.airfoil_type1} to {self.airfoil_type2} with transition {self.transition}")
         plt.legend()
         plt.xlabel("X [in]")
@@ -350,7 +372,46 @@ class Airfoil_Section():
             plt.savefig(save_folder + "\\" + filename)
             plt.close()
 
+    ### Airfoil analysis functions ###
+    def get_aero(self, alpha_variation=None, Re=1e6, mach=0.2, n_crit=9, model_size="xxxlarge"):
+        if alpha_variation is None:
+            alpha_variation = self.alpha_variation
+        # self.af = asb.Airfoil("NACA4412")
+        # self.nf = self.af.get_aero_from_neuralfoil(alpha=self.alpha_variation, Re=Re, mach=mach, n_crit=n_crit, model_size=model_size)
+        self.aero = nf.get_aero_from_coordinates(
+            coordinates=np.array([self.X, self.Y]).T,
+            alpha=alpha_variation,
+            Re=Re,
+            # mach=mach,
+            # n_crit=n_crit,
+            model_size=model_size
+        )
+
+        return self.aero
+
+    def plot_aero(self, Re):
+        # plt.title(f"Aerodynamic Analysis of {self.airfoil_type1} to {self.airfoil_type2} with transition {self.transition} with Re={Re}")
+        plt.plot(self.alpha_variation, self.aero["CL"], label=f"CL, Re={Re:.0g}")
+        plt.plot(self.alpha_variation, self.aero["CD"], label=f"CD, Re={Re:.0g}")
+        plt.ylabel('CL [-]')
+        plt.xlabel('Alpha [deg]')
+        plt.legend()
+        # plt.show()
+
 
 if __name__ == "__main__":
-    self = Airfoil_Section("NACA 4412", "E63", 0.9, 0.17, 100, center=True)
-    self.plot_airfoil()
+    self = Airfoil_Section("NACA 4412", "E63", transition=1, thickness_ratio=0.0425, n=150, center=True)
+    # self.scale(0.877)
+
+    # self.plot_airfoil(chord=False, camber=False, interpolated_only=True, show=False)
+    # self.increase_thickness_across_chamber(0.05)
+    # self.plot_airfoil(chord=False, camber=True, interpolated_only=True)
+
+    self.alpha_variation = np.linspace(-9, 9, 21)
+
+    for Re in [1e5, 5e5, 1e6]:
+        self.get_aero(Re=Re, mach=0, n_crit=9, model_size="xxxlarge")
+        self.plot_aero(Re)
+
+    from XFoil import XFoil
+    xf = XFoil()
