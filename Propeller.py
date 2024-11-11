@@ -31,25 +31,25 @@ class Propeller():
     def merge_parts(self):
         self.part = self.blade1.union(self.blade2).union(self.hub.part)
         # show_object(self.part)
-
-        print("### Propeller created ###")
         return self.part
 
     def cleanup(self):
-        self.part = self.part.faces(">Z").workplane(centerOption="CenterOfMass").hole(self.hub.inner_radius*2)  # remake hole
-        self.part = self.part.faces("<Z").workplane(invert=True).circle(self.hub.outer_radius).extrude(self.hub.thickness/2, combine="cut") # remove "debris" above hub
-        self.part = self.part.faces(">Z").workplane(invert=True).circle(self.hub.outer_radius).extrude(self.hub.thickness/2, combine="cut") # remove "debris" below hub
-
-
         if self.attachment_points:
-            ap_exzenter_distance = 15/2/25.4  #radius in inch
+            ap_excenter_distance = 15/2/25.4  #radius in inch
             pin_radius = 3/2/25.4
-            pin_length = self.hub.thickness+1  # throughhole
+            pin_length = self.hub.thickness+10  # throughhole
 
-            self.part = self.part.faces("<Z").workplane(invert=True).center(ap_exzenter_distance, 0).circle(pin_radius).extrude(
+            self.part = self.part.faces("<Z").workplane(invert=True, centerOption="CenterOfMass").center(ap_excenter_distance, 0).circle(pin_radius).extrude(
                 pin_length, combine="cut")
-            self.part = self.part.faces("<Z").workplane(invert=True).center(-2*ap_exzenter_distance, 0).circle(pin_radius).extrude(
+            self.part = self.part.faces("<Z").workplane(invert=True).center(-2*ap_excenter_distance, 0).circle(pin_radius).extrude(
                 pin_length, combine="cut")
+
+        self.part = self.part.faces(">Z").workplane(centerOption="CenterOfMass").hole(self.hub.inner_radius*2)  # remake hole
+        self.part = self.part.faces("<Z").workplane(invert=True).circle(self.hub.outer_radius).extrude(self.hub.thickness/2, combine="cut") # remove "debris" below hub
+        self.part = self.part.faces(">Z").workplane(invert=True).circle(self.hub.outer_radius).extrude(self.hub.thickness*1.5, combine="cut") # remove "debris" above hub
+
+
+
 
 
         if not self.counterclockwise_rotation:
@@ -61,4 +61,5 @@ class Propeller():
         return self.part
 
 
-    
+    def show(self):
+        show_object(self.part)

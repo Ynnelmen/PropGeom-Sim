@@ -13,7 +13,7 @@ import matplotlib
 matplotlib.use('TkAgg') # Needed to show plots in a separate window
 import matplotlib.pyplot as plt
 
-hub_geometry_types = {
+hub_geometry_types = { ## valid for 9-11" propellers #todo find parameterization for different diameters
                 "-PERF": [1/2, 0.15, 0.5],
                 "E-PERF": [0.8/2, 0.15, 0.4],
                 "MR-PERF": [0.65/2, 0.15, 0.35],
@@ -23,7 +23,7 @@ hub_geometry_types = {
                 "C-PERF": [1/2, 5/16, 0.56],
                 }
 
-interpolation_points = 50 ## Number of Points to define each, the lower and upper side of the airfoil. Total number of points per airfoil is 2*interpolation_points
+interpolation_points = 100 ## Number of Points to define each, the lower and upper side of the airfoil. Total number of points per airfoil is 2*interpolation_points
 ### this markably impacts filesize and to an extend processing speed. Quality (especially around leading edge) decreases at around 20 points
 ### Lofts are automatically splining to points, so the general shape is preserved even with fewer points, however then the shape begins to deviate from the with more points. If super low filesize is crucial, this can be reduced to 5-10 points
 counterclockwise_rotation = True  ## if false, propeller is mirrored
@@ -46,43 +46,49 @@ rotation_axis_is_X = True ## Default Axis of rotation is around Z. If true, prop
 # Run the script.
 # ########################################################################################################################
 ### CHANGE FILENAME HERE
-filename = os.getcwd() + r"\APC Propeller Geometry Data\10x7E-PERF.PE0"
+filename = os.getcwd() + r"\APC Propeller Geometry Data\13X4E-PERF.PE0"
 ### SET HUB GEOMETRY HERE (or leave as is to infer from propeller name)
-infer_hub_geometry = True  # If true, hub geometry is inferred from the propeller name and overwrites the following values. If False, hub geometry has to be defined manually below
-outer_radius = 0.65 / 2
-inner_radius = 0.15
-thickness = 0.36
+infer_hub_geometry = False  # If true, hub geometry is inferred from the propeller name and overwrites the following values. If False, hub geometry has to be defined manually below
+outer_radius = 0.8 / 2  # Hub Diameter [in] / 2
+inner_radius = 0.25 / 2  # Shaft Diameter [in] / 2
+thickness = 0.4  # Hub Thickness [in]
 ########################################################################################################################
 
 propeller_name = os.path.basename(filename).split(".")[0]
-hubtype = ''.join([i for i in propeller_name.split("x")[1] if not i.isdigit()])
-propeller_name = propeller_name + f"_IP{interpolation_points}_original2"
+hubtype = ''.join([i for i in propeller_name.upper().split("X")[1] if not i.isdigit()])
+propeller_name = propeller_name + f"_IP{interpolation_points}"
 
 ### Create Hub
 if infer_hub_geometry:
     outer_radius, inner_radius, thickness = hub_geometry_types[hubtype]
 hub = Hub(interpolation_points*2-1, outer_radius, inner_radius, thickness)
 hub.create_hub_geometry()
-# show_object(hub.part)
+show_object(hub.part)
 print("### Hub created ###")
 
 apcreader = APCReader(filename)
-# Thickness Variation:
-max_mm = 0.05  #[mm] (outer radius)
-min_mm = 0.05  #[mm] (at innermost airfoil)
+# Thickness Variation (for thermal issues):
+max_mm = 0.00  #[mm] (outer radius)
+min_mm = 0.00  #[mm] (at innermost airfoil)
 thickness_variation_blade1 = np.linspace(max_mm, min_mm, num=len(apcreader.thickness_ratio))
 thickness_variation_blade2 = - thickness_variation_blade1  # +/-
 
 ### Create Blade
+# section_adaptation = np.array([0.4, 1, 1.9, 0.9])  # to account for Cross-sectional Area differences between APC and generated propeller
+section_adaptation = None
 blade = Blade(apcreader, hub, interpolation_points, linear_interpolation=linear_interpolation,
-              thickness_variation=thickness_variation_blade1)
+              thickness_variation=thickness_variation_blade1, section_adaptation=section_adaptation)
 s = blade.create_blade(export=False)
 show_object(s)
+
 ### Create Blade2
-blade2 = Blade(apcreader, hub, interpolation_points, linear_interpolation=linear_interpolation,
-               thickness_variation=thickness_variation_blade2)
-s2 = blade2.create_blade(export=False)
-show_object(s2)
+if max_mm == 0 and min_mm == 0:
+    blade2 = blade
+else:
+    blade2 = Blade(apcreader, hub, interpolation_points, linear_interpolation=linear_interpolation,
+                   thickness_variation=thickness_variation_blade2, section_adaptation=section_adaptation)
+    s2 = blade2.create_blade(export=False)
+    show_object(s2)
 
 #calculate volume of propeller
 v1 = blade.blade_solid.val().Volume()
@@ -91,7 +97,8 @@ print(v1, v2, v1/v2)
 
 ### Create Propeller
 propeller = Propeller(blade.blade_solid, hub, Blade2=blade2.blade_solid, linear_interpolation=linear_interpolation,
-                      ccw=counterclockwise_rotation, attachment_points = True)
+                      ccw=counterclockwise_rotation, attachment_points=False)
+
 propeller.cleanup()
 
 if isinstance(propeller.part, cq.Workplane):
@@ -102,23 +109,14 @@ else:
 if rotation_axis_is_X:
     propeller.part = propeller.part.rotate((0,0,0), (0,1,0), 90)
 
-show_object(propeller.part)
-# # #
-save_name = os.getcwd() + f"\\Generated Propeller Exports\\{propeller_name}"
-# # # cq.exporters.export(propeller.part, f"{save_name}.step")
-propeller.part.objects[0].exportStep(f"{propeller_name}_default.step") #, precision_mode=-1, write_pcurves=False)
 
-#
+# show_object(propeller.part) # requires ocp_Viewer (Visual Studio Code only)
+propeller.part.objects[0].exportStep(os.getcwd() + f"\\Generated Propeller Exports\\{propeller_name}.step")
+
+
 # # propeller.part.val().exportStep(f"{propeller_name}_val.step", precision_mode=1, write_pcurves=False)
 # # cq.exporters.export(propeller.part.objects[0], f"{propeller_name}_cq_export.step", opt={'precision_mode': 2, 'write_pcurves': False})
 # propeller.part.objects[0].exportStl(f"{propeller_name}.stl") #, precision_mode=-1, write_pcurves=False)
-
-# Export STEP file with OCP
-# from OCP.STEPCAFControl import STEPCAFControl_Writer
-# from OCP.XSControl import XSControl_WorkSession
-# writer = STEPCAFControl_Writer(XSControl_WorkSession(), False)
-# writer.Transfer(propeller.part.objects[0], 0)
-# writer.Write(f"{propeller_name}.step")
 
 print("### Propeller exported ###")
 
@@ -128,17 +126,42 @@ print("### Propeller exported ###")
 # show_object(test_part)
 
 
-# TODO:
-# Add more airfoil types. Only NACA, E63 and CLARK-Y are implemented. However, most APC propellers use only these airfoils.
-# RESOLVED: Hub dimensions have to be defined manually. Find possible connections to automate
+### Known Issues:
+# Crosssectional area does not match the APC propeller geometry file. For details, use APC_comparisons(), comparisons_plot() in Blade.py
+'''Possible causes include: 
+different airfoil coordinates (APC12), different transition methods, extrapolation from sparcely defined airfoils (E63),  
+different maximum airfoil thicknesses (e.g.: thickness measured 90° to chord, or 90° to chamber - see "thickness_mode"
+ in Airfoil_Section.py)'''
 
-# Known Deviations from Product/Manual
-# last airfoil is shifted in X and Y to match trailing edge of second last airfoil (by 90%). This is an arbitrary shift. Find a better way to finish the blade at the outer radius
-# RESOLVED (Probably): Transition part is simple loft between last airfoil and ellipse at hub center. However, products have better transition.
+# APC does not provide their exact airfoils. They claim APC12 = NACA12, but also state the following on their website:
+'''The dominant basis for the primary airfoil shape used in most APC propellers is similar to the NACA 4412 and Clark-Y 
+airfoils, except the leading edge is somewhat lower. Also, the aft region is somewhat thicker. This alters the zero-lift 
+angle by approximately one degree and provides greater lift without having to twist the blade more. Most blades have 
+some washout near the tip. For applications where Mach number effects become significant near the tip, either pitch 
+washout or camber reduction are used to minimize Mach drag rise.'''# www.apcprop.com/technical-information/engineering/
+
+# Transitions between airfoils are handled by interpolated y-coordinate of the airfoils at the same x-coord. The
+# individual airfoils are scaled (to max_thickness) before interpolation.
+# APC does not provide their exact transition method and only writes the following:
+'''Capability exists to smoothly "splice" together widely different airfoil shapes.'''
+
+### Interpretations from Data-Files:
+# last airfoil is shifted in X and Y to match trailing edge of second last airfoil (by 90%). This is an arbitrary, but
+# necessary shift to avoid implausible edges to the radius-axis, as would be the case in some data-files.
+
+# Transition part is simple loft between last airfoil and ellipse at hub center. However, products have better transition.
+'''Cross-section geometry in and near the hub region is defined with specialized algorithms. The aerodynamic-dominant 
+airfoil must smoothly transition into a structural-dominant shape in a manner that emphasizes strength consistent with 
+milling machine tool constraints. '''
+
 # Transition part is sometimes exceeding the upper hub surface, which is not observed on products. -> Ellipse is shifted in Z (-thickness*0.05) to avoid this.
-# Transition includes a second hub_edge, which is a copy of the first hub_edge with a small offset in X for a more consistent loft. This has been implemented to more resemble to the product but is not part of the manual.
+
+# Transition includes a second hub_edge, which is a copy of the first hub_edge with a small offset in X for a more
+# consistent loft. This has been implemented to more resemble to the product but is not part of the manual.
+
 # Propeller has chamfers at the hub. This is not implemented
 
-# Potential Issues:
-# Loft shapes can sometimes (strongly) change after unions...?
-# Export Filesize is large (~50-70MB). This is likely due to the high number of faces in the lofts. This can be reduced by reducing the number of interpolation points. However, this will also reduce the quality of the propeller.
+### Potential Issues:
+# Loft shapes can sometimes (strongly) change after unions...? (encountered during testing phase)
+# Export Filesize is large (~50-70MB). This is likely due to the high number of faces in the lofts. This can be reduced
+# by reducing the number of interpolation points. However, this will also reduce the quality of the propeller.

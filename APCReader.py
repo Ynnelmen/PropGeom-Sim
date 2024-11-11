@@ -12,6 +12,7 @@ class APCReader():
         self.second_last_airfoil_mediation_parameter = 0.3 ## lowers the cgz of the second last airfoil by 30% of the difference between the 3rd last and 2nd last airfoil cgz
 
         self.interpret_geom_data()
+        self.propeller_name = filename.split("\\")[-1].split("-")[0]
 
     def read_geom_data(self, filename):
         # Read geometry data from APC
@@ -87,6 +88,7 @@ class APCReader():
         self.y_trans = self.geometry_data['CGY'].to_numpy()
         self.z_trans = self.geometry_data['CGZ'].to_numpy()
         self.x_trans = np.zeros(len(self.y_trans))  # no translation in radial direction
+        self.cross_section_area = self.geometry_data['CROSS-SECTION'].to_numpy()
 
         self.z_trans[-2] = self.z_trans[-3] * self.second_last_airfoil_mediation_parameter + self.z_trans[-2] * (1-self.second_last_airfoil_mediation_parameter)
 
