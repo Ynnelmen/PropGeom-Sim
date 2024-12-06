@@ -23,7 +23,7 @@ hub_geometry_types = { ## valid for 9-11" propellers #todo find parameterization
                 "C-PERF": [1/2, 5/16, 0.56],
                 }
 
-interpolation_points = 100 ## Number of Points to define each, the lower and upper side of the airfoil. Total number of points per airfoil is 2*interpolation_points
+interpolation_points = 200 ## Number of Points to define each, the lower and upper side of the airfoil. Total number of points per airfoil is 2*interpolation_points
 ### this markably impacts filesize and to an extend processing speed. Quality (especially around leading edge) decreases at around 20 points
 ### Lofts are automatically splining to points, so the general shape is preserved even with fewer points, however then the shape begins to deviate from the with more points. If super low filesize is crucial, this can be reduced to 5-10 points
 counterclockwise_rotation = True  ## if false, propeller is mirrored
@@ -46,9 +46,9 @@ rotation_axis_is_X = True ## Default Axis of rotation is around Z. If true, prop
 # Run the script.
 # ########################################################################################################################
 ### CHANGE FILENAME HERE
-filename = os.getcwd() + r"\APC Propeller Geometry Data\13X4E-PERF.PE0"
+filename = os.getcwd() + r"\APC Propeller Geometry Data\10X7E-PERF.PE0"
 ### SET HUB GEOMETRY HERE (or leave as is to infer from propeller name)
-infer_hub_geometry = False  # If true, hub geometry is inferred from the propeller name and overwrites the following values. If False, hub geometry has to be defined manually below
+infer_hub_geometry = True  # If true, hub geometry is inferred from the propeller name and overwrites the following values. If False, hub geometry has to be defined manually below
 outer_radius = 0.8 / 2  # Hub Diameter [in] / 2
 inner_radius = 0.25 / 2  # Shaft Diameter [in] / 2
 thickness = 0.4  # Hub Thickness [in]
@@ -62,7 +62,7 @@ propeller_name = propeller_name + f"_IP{interpolation_points}"
 if infer_hub_geometry:
     outer_radius, inner_radius, thickness = hub_geometry_types[hubtype]
 hub = Hub(interpolation_points*2-1, outer_radius, inner_radius, thickness)
-hub.create_hub_geometry()
+hub.create_hub_outline()
 show_object(hub.part)
 print("### Hub created ###")
 
@@ -74,10 +74,12 @@ thickness_variation_blade1 = np.linspace(max_mm, min_mm, num=len(apcreader.thick
 thickness_variation_blade2 = - thickness_variation_blade1  # +/-
 
 ### Create Blade
-# section_adaptation = np.array([0.4, 1, 1.9, 0.9])  # to account for Cross-sectional Area differences between APC and generated propeller
+# section_adaptation = np.array([0.4, 1, 1.75, 0.9])  # to account for Cross-sectional Area differences between APC and generated propeller
 section_adaptation = None
+# E63_correction = 0.88
+E63_correction = 1
 blade = Blade(apcreader, hub, interpolation_points, linear_interpolation=linear_interpolation,
-              thickness_variation=thickness_variation_blade1, section_adaptation=section_adaptation)
+              thickness_variation=thickness_variation_blade1, section_adaptation=section_adaptation, E63_correction=E63_correction)
 s = blade.create_blade(export=False)
 show_object(s)
 
@@ -90,10 +92,10 @@ else:
     s2 = blade2.create_blade(export=False)
     show_object(s2)
 
-#calculate volume of propeller
-v1 = blade.blade_solid.val().Volume()
-v2 = blade2.blade_solid.val().Volume()
-print(v1, v2, v1/v2)
+    #calculate volume of propeller
+    v1 = blade.blade_solid.val().Volume()
+    v2 = blade2.blade_solid.val().Volume()
+    print(v1, v2, v1/v2)
 
 ### Create Propeller
 propeller = Propeller(blade.blade_solid, hub, Blade2=blade2.blade_solid, linear_interpolation=linear_interpolation,
@@ -110,21 +112,51 @@ if rotation_axis_is_X:
     propeller.part = propeller.part.rotate((0,0,0), (0,1,0), 90)
 
 
-# show_object(propeller.part) # requires ocp_Viewer (Visual Studio Code only)
 propeller.part.objects[0].exportStep(os.getcwd() + f"\\Generated Propeller Exports\\{propeller_name}.step")
-
-
-# # propeller.part.val().exportStep(f"{propeller_name}_val.step", precision_mode=1, write_pcurves=False)
+# propeller.part.val().exportStep(f"{propeller_name}_val.step", precision_mode=1, write_pcurves=False)
 # # cq.exporters.export(propeller.part.objects[0], f"{propeller_name}_cq_export.step", opt={'precision_mode': 2, 'write_pcurves': False})
-# propeller.part.objects[0].exportStl(f"{propeller_name}.stl") #, precision_mode=-1, write_pcurves=False)
+propeller.part.objects[0].exportStl(f"{propeller_name}_hubz-11.stl") #, precision_mode=-1, write_pcurves=False)
 
 print("### Propeller exported ###")
 
+# propeller.part = propeller.part.rotate((0,0,0), (1,0,0), 1)
+show_object(propeller.part) # requires ocp_Viewer (Visual Studio Code only)
+#
+# from sklearn.cluster import DBSCAN
+# ## compare with point cloud
+# df = pd.read_csv(r"C:\Users\RhinerLenny\OneDrive - inspire AG\BAZL\airfoil_data\Point Clouds Rhysearch\Punktewolke_10x7E_LI_oben.asc", delim_whitespace=True, header=None, names=['x', 'y', 'z'])
+# df = df.drop_duplicates(subset=['x', 'y', 'z'])
+#
+# epsilon = 1  # Adjust this value as needed
+# dbscan = DBSCAN(eps=epsilon, min_samples=1)
+# df['line_group'] = dbscan.fit_predict(df[['x']])
+# lines = df.groupby('line_group')
+# print(len(lines))
+#
+# splines = []
+# llines = []
+# for num, (_, line) in enumerate(lines):
+#     # if num == 0:
+#     print(num, end="\r")
+#     lline = line[['x', 'y', 'z']].values.tolist()
+#     spline = cq.Workplane("YZ").spline(lline).toPending().close()
+#     splines.append(spline)
+#     llines.append(lline)
+#     show_object(spline, name="Points", options={"opacity": 1})
 
-### test export with import
-# test_part = cq.importers.importStep(f"{filename}.step")
-# show_object(test_part)
 
+
+# point_size = 0.1
+# wp = cq.Workplane("YZ")
+# for i, row in df.iterrows():
+#     print(i, end="\r")
+#     if i > 100:
+#         break
+#     x, y, z = row['x'], row['y'], row['z']
+    # wp = wp.union(cq.Workplane("YZ").transformed(offset=(x, y, z)).sphere(point_size))
+    # wp = wp.sphere(point_size).translate((x, y, z))
+
+# show_object(wp, name="Point Cloud2", options={"opacity": 0.5})
 
 ### Known Issues:
 # Crosssectional area does not match the APC propeller geometry file. For details, use APC_comparisons(), comparisons_plot() in Blade.py

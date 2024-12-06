@@ -70,6 +70,7 @@ class Airfoil_Section():
         else:
             self.E63_content = 0
         self.E63_correction = E63_correction * self.E63_content + (1-self.E63_content)
+        assert self.E63_correction > 0, "E63 correction must be larger than 0"
         # print(self.E63_correction, self.E63_content, self.transition)
 
         self.X = None
@@ -84,10 +85,10 @@ class Airfoil_Section():
     def initialize(self):
         if self.transition == 0.0:
             self.X0, self.Y0 = self.draw_airfoil(self.airfoil_type1)
-            self.X0, self.Y0 = self.scale_across_chamber(self.thickness_ratio / self.get_max_thickness_vertically())
+            self.X, self.Y = self.scale_across_chamber(self.thickness_ratio / self.get_max_thickness_vertically())
         elif self.transition == 1.0:
-            self.X0, self.Y0 = self.draw_airfoil(self.airfoil_type2)
-            self.X0, self.Y0 = self.scale_across_chamber(self.thickness_ratio / self.get_max_thickness_vertically())
+            self.X, self.Y = self.draw_airfoil(self.airfoil_type2)
+            self.X, self.Y = self.scale_across_chamber(self.thickness_ratio / self.get_max_thickness_vertically())
         elif self.transition > 0 and self.transition < 1:
             self.X1, self.Y1 = self.draw_airfoil(self.airfoil_type1)
             self.X1, self.Y1 = self.scale_across_chamber(self.thickness_ratio / self.get_max_thickness_vertically())
@@ -99,7 +100,7 @@ class Airfoil_Section():
         else:
             raise ValueError(f"Transition value must be between 0 and 1, but is {self.transition}")
 
-        # self.scale_across_chamber(self.thickness_ratio / self.get_max_thickness_vertically())#* self.E63_correction)  ## [WIKIPEDIA] The thickness ratio is the maximum vertical thickness divided by the chord length.
+        self.scale_across_chamber(self.thickness_ratio / self.get_max_thickness_vertically()* self.E63_correction)  ## [WIKIPEDIA] The thickness ratio is the maximum vertical thickness divided by the chord length.
         if self.center:
             self.center_airfoil()
             # pass
@@ -266,7 +267,6 @@ class Airfoil_Section():
         self.y_camber = np.append(self.y_camber, np.ones(self.n-2)/2)
         self.y_camber = np.append(self.y_camber, [0])
         return self.X, self.Y
-
 
 
     ########### Airfoil drawing helper functions ###########
