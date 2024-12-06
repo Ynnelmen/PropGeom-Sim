@@ -14,8 +14,6 @@ from APCReader import APCReader
 from Airfoil_Section import Airfoil_Section
 
 
-
-
 class PropellerParameters:
     """DEFINE GLOBAL PROPELLER PARAMETERS"""
     def __init__(self, prop_radius, hub_radius, n_blades, RPM, v_inf, a_inf, rho, mu):
@@ -64,7 +62,7 @@ class SectionForces:
         return Ftip * Fhub
 
     def airfoil_coefficients(self, alpha, Re, Ma, model_size="xxxlarge"):
-        airfoil=asb.Airfoil(coordinates=self.airfoil_coordinates)
+        airfoil = asb.Airfoil(coordinates=self.airfoil_coordinates)
         full_output = asb.Airfoil.get_aero_from_neuralfoil(airfoil, alpha=alpha, Re=Re, mach=Ma, model_size=model_size)
         #full_output = nf.get_aero_from_coordinates(coordinates=self.airfoil_coordinates, alpha=alpha, Re=Re, model_size=model_size)
         return full_output["CL"].item(), full_output["CD"].item()

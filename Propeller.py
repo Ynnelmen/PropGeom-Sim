@@ -44,13 +44,10 @@ class Propeller():
             self.part = self.part.faces("<Z").workplane(invert=True).center(-2*ap_excenter_distance, 0).circle(pin_radius).extrude(
                 pin_length, combine="cut")
 
+        # refine hub
         self.part = self.part.faces(">Z").workplane(centerOption="CenterOfMass").hole(self.hub.inner_radius*2)  # remake hole
-        self.part = self.part.faces("<Z").workplane(invert=True).circle(self.hub.outer_radius).extrude(self.hub.thickness/2, combine="cut") # remove "debris" below hub
+        self.part = self.part.faces("<Z").workplane(invert=True).circle(self.hub.outer_radius).extrude(self.hub.thickness*0.5, combine="cut") # remove "debris" below hub
         self.part = self.part.faces(">Z").workplane(invert=True).circle(self.hub.outer_radius).extrude(self.hub.thickness*1.5, combine="cut") # remove "debris" above hub
-
-
-
-
 
         if not self.counterclockwise_rotation:
             self.part = self.part.mirror("XZ")
