@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 from scipy.interpolate import griddata
-from APC_Reader import APCReader
+from APC_Reader import APC_Reader
 from BEMT_Blade import BEMT_Blade
 from BEMT_Solver import PropellerAnalysis, PropellerParameters
 from Acoustic_Solver import CompactSourceElement, f1a, common_obs_time, combine_pressure_history, acousticReceiver, ObserverManager
@@ -17,7 +17,7 @@ class Job:
         self.propeller_name = propeller_name.upper()  # e.g. "10x7E"
         self.interpolation_points = interpolation_points
 
-        self.apc_reader = APCReader(os.getcwd() + fr"\APC Propeller Geometry Data\{propeller_name}-PERF.PE0")
+        self.apc_reader = APC_Reader(os.getcwd() + fr"\APC Propeller Geometry Data\{propeller_name}-PERF.PE0")
         if blade is None:
             blade = BEMT_Blade(self.apc_reader, interpolation_points)
         self.propeller_geometry = blade.export_geometry_for_analysis()

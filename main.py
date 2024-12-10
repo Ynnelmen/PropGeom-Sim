@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import os
 from Blade import Blade
-from APC_Reader import APCReader
+from APC_Reader import APC_Reader
 from Hub import Hub
 from Propeller import Propeller
 
@@ -66,7 +66,7 @@ hub.create_hub_outline()
 show_object(hub.part)
 print("### Hub created ###")
 
-apcreader = APCReader(filename)
+apcreader = APC_Reader(filename)
 # Thickness Variation (for thermal issues):
 max_mm = 0.00  #[mm] (outer radius)
 min_mm = 0.00  #[mm] (at innermost airfoil)

@@ -1,14 +1,14 @@
 import os
 import numpy as np
 from Blade import Blade
-from APC_Reader import APCReader
+from APC_Reader import APC_Reader
 from BEMT_Solver import PropellerAnalysis, SectionForces, PropellerParameters
 
 
 
 """IMPORT PROPELLER GEOMETRY DATA"""
 interpolation_points = 200
-apcreader_object = APCReader(os.getcwd() + r"\APC Propeller Geometry Data\10x7E-PERF.PE0")
+apcreader_object = APC_Reader(os.getcwd() + r"\APC Propeller Geometry Data\10x7E-PERF.PE0")
 propeller_geometry = Blade(apcreader_object, interpolation_points, linear_interpolation=True)
 
 # # #[radius, dr, c, twist, airfoil_data_x, airfoil_data_y]

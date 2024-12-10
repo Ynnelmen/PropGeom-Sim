@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import pandas as pd
-from APC_Reader import APCReader
+from APC_Reader import APC_Reader
 from Blade import Blade
 from Hub import Hub
 import os
@@ -20,7 +20,7 @@ for file in os.listdir(propeller_data_folder):
     if file.endswith(".PE0") and "E-PERF" in file and int(file.split("x")[0]) <= 20 and not "W" in file:
         name = file.split("-")[0]
 
-        apcreader = APCReader(os.getcwd() + r"\APC Propeller Geometry Data" + "\\" + file)
+        apcreader = APC_Reader(os.getcwd() + r"\APC Propeller Geometry Data" + "\\" + file)
         blade = Blade(apcreader, hub, interpolation_points, linear_interpolation=False,
                       section_adaptation=section_adaptation, E63_correction=E63_correction)
         blade.comparisons_plot(show=False, save=True)
