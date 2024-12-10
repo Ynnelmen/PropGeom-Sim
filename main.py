@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import os
 from Blade import Blade
-from APCReader import APCReader
+from APC_Reader import APCReader
 from Hub import Hub
 from Propeller import Propeller
 

@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from Blade import Blade
-from APCReader import APCReader
+from APC_Reader import APCReader
 from BEMT_Solver import PropellerAnalysis, SectionForces, PropellerParameters
 
 

@@ -10,7 +10,7 @@ import aerosandbox as asb
 from joblib import Parallel, delayed
 
 from Blade import Blade
-from APCReader import APCReader
+from APC_Reader import APCReader
 from Airfoil_Section import Airfoil_Section
 
 

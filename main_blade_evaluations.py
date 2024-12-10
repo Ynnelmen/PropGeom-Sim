@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import pandas as pd
-from APCReader import APCReader
+from APC_Reader import APCReader
 from Blade import Blade
 from Hub import Hub
 import os

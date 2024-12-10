@@ -197,17 +197,21 @@ class AcousticObserver:
         return self.position_vector
 
 class ObserverManager:
-    def __init__(self, observer_positions=None, type="iso", number_of_observers=24, radius = 2.1):
+    def __init__(self, observer_positions=None, type="iso3745", number_of_observers=24, radius = 2.1):
         """ observer_positions: [[x1, y1, z1], [x2, y2, z2], ...] or accepted types: "iso",... """
-        if type.lower() == "iso":
+        if isinstance(observer_positions, list) or isinstance(observer_positions, np.ndarray):
+            if len(observer_positions[0]) == 3:
+                self.observers = [AcousticObserver(pos) for pos in observer_positions]
+        elif type.lower() == "iso":
+            self.observers = self.get_iso3745_observers()
+        elif type.lower() == "iso3744":
             self.observers = self.get_iso3744_observers()
+        elif type.lower() == "iso3745":
+            self.observers = self.get_iso3745_observers()
         elif type.lower() == "even":
             self.observers = self.spherical_grid_sampled_observers(number_of_observers, radius)
         elif type.lower() == "fibonacci":
             self.observers = self.fibonacci_sampled_observers(number_of_observers, radius)
-        elif isinstance(observer_positions, list) or isinstance(observer_positions, np.ndarray):
-            if len(observer_positions[0]) == 3:
-                self.observers = [AcousticObserver(pos) for pos in observer_positions]
         else:
             raise ValueError("Invalid observer positions")
 
@@ -266,8 +270,6 @@ class ObserverManager:
         # todo
 
 
-
-
     def get_iso3744_observers(self):
         # NR, x, y, z [m]
         iso_data = np.array([
@@ -284,6 +286,21 @@ class ObserverManager:
         ])
         observers = [AcousticObserver([x, y, z]) for _, x, y, z in iso_data]
         return observers
+
+    def get_iso3745_observers(self):
+        # NR, x, y, z [m]
+        iso_data = np.array([
+            [0, -1.887, 0, 0.844444444-0.75],
+            [1, 0.933111111, -1.616888889, 1.033333333-0.75],
+            [2, 0.914222222, 1.584777778, 1.222222222-0.75],
+            [3, -0.884, 1.531888889, 1.411111111-0.75],
+            [4, -0.844333333, -1.460111111, 1.6-0.75],
+            [5, 1.577222222, 0, 1.788888889-0.75],
+            [6, 0.717777778, 1.242888889, 1.977777778-0.75],
+            [7, -1.248555556, 0, 2.166666667-0.75],
+            [8, 0.496777778, -0.861333333, 2.355555556-0.75],
+            [9, 0.589333333, 0, 2.544444444-0.75]
+        ])
 
     def add_observers_to_ax(self, ax):
         for num, observer in enumerate(self.observers):
@@ -389,7 +406,6 @@ class F1AOutput:
         self.p_d = p_d
 
 def f1a(compact_elements, observer, observer_time):
-    #observer position
     observer_position = observer()
 
     #0th order derivatives
@@ -403,8 +419,8 @@ def f1a(compact_elements, observer, observer_time):
     R_m1m2_0d = lambda m1, m2: r0d**(-m1) * (1 - Mr_0d)**(-m2)
 
     #1st order derivatives
-    r_vec_1d = -compact_elements.y1d
-    r1d = -np.dot(r_hat_0d, v_vec_0d)
+    # r_vec_1d = -compact_elements.y1d
+    # r1d = -np.dot(r_hat_0d, v_vec_0d)
     v_vec_1d = compact_elements.y2d
     M1d = 1/compact_elements.a_inf * np.dot(v_vec_0d, v_vec_1d) / (np.linalg.norm(v_vec_0d))
     r_hat_1d = -compact_elements.a_inf/r0d * (M_vec_0d - Mr_0d*r_hat_0d)

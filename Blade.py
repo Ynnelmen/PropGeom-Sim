@@ -293,7 +293,7 @@ class Blade():
 
 
 if __name__ == "__main__":
-    from APCReader import APCReader
+    from APC_Reader import APCReader
     from Hub import Hub
     import os
 

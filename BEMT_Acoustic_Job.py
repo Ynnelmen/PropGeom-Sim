@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 from scipy.interpolate import griddata
-from APCReader import APCReader
+from APC_Reader import APCReader
 from BEMT_Blade import BEMT_Blade
 from BEMT_Solver import PropellerAnalysis, PropellerParameters
 from Acoustic_Solver import CompactSourceElement, f1a, common_obs_time, combine_pressure_history, acousticReceiver, ObserverManager
