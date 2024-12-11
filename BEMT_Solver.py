@@ -1,17 +1,9 @@
 """IMPORT PACKAGES"""
 import numpy as np
-import neuralfoil as nf
 import scipy.optimize
 import pandas as pd
-import os
-import matplotlib.pyplot as plt
-import itertools
 import aerosandbox as asb
 from joblib import Parallel, delayed
-
-from Blade import Blade
-from APC_Reader import APC_Reader
-from Airfoil_Section import Airfoil_Section
 
 
 class PropellerParameters:
@@ -64,42 +56,40 @@ class SectionForces:
     def airfoil_coefficients(self, alpha, Re, Ma, model_size="xxxlarge"):
         airfoil = asb.Airfoil(coordinates=self.airfoil_coordinates)
         full_output = asb.Airfoil.get_aero_from_neuralfoil(airfoil, alpha=alpha, Re=Re, mach=Ma, model_size=model_size)
-        #full_output = nf.get_aero_from_coordinates(coordinates=self.airfoil_coordinates, alpha=alpha, Re=Re, model_size=model_size)
         return full_output["CL"].item(), full_output["CD"].item()
 
     def section_parameters(self, phi):
         alpha = np.degrees(self.theta - phi)
-        Cl, Cd = self.airfoil_coefficients(alpha, self.Re, self.Ma)
-        CT = Cl * np.cos(phi) - Cd * np.sin(phi)
-        CQ = Cl * np.sin(phi) + Cd * np.cos(phi)
+        c_l, c_d = self.airfoil_coefficients(alpha, self.Re, self.Ma)
+        c_l_prime = c_l * np.cos(phi) - c_d * np.sin(phi)
+        c_d_prime = c_l * np.sin(phi) + c_d * np.cos(phi)
         F = self.prandtl_loss(phi)
-        a = 1 / ((4 * F * np.sin(phi)**2) / (self.sigma * CT) - 1)
-        a_prime = 1 / ((4 * F * np.sin(phi) * np.cos(phi)) / (self.sigma * CQ) + 1)
+        a = 1 / ((4 * F * np.sin(phi)**2) / (self.sigma * c_l_prime) - 1)
+        a_prime = 1 / ((4 * F * np.sin(phi) * np.cos(phi)) / (self.sigma * c_d_prime) + 1)
         v_a = (1 + a) * self.propeller_params.v_inf
-        v_t = (1 - a_prime) * self.propeller_params.omega * self.r
-        V = np.sqrt(v_a**2 + v_t**2)
-        self.Re = self.propeller_params.rho * V * self.chord / self.propeller_params.mu
-        self.Ma = V/self.propeller_params.a_inf
-        return alpha, Cl, Cd, F, a, a_prime, V, CT, CQ
+        v_t = self.propeller_params.omega * self.r* (1 - a_prime)
+        W = np.sqrt(v_a**2 + v_t**2)
+        self.Re = self.propeller_params.rho * W * self.chord / self.propeller_params.mu
+        self.Ma = W/self.propeller_params.a_inf
+        return alpha, c_l, c_d, F, a, a_prime, W, c_l_prime, c_d_prime
 
     def residual_function(self, phi):
         _, _, _, _, a, a_prime, _, _, _ = self.section_parameters(phi)
-        # print(f"phi: {np.degrees(phi)}, a: {a}, a_prime: {a_prime}")
         return np.sin(phi) / (1 + a) - self.propeller_params.v_inf / (self.propeller_params.omega * self.r) * (np.cos(phi) / (1 - a_prime))
 
     def solve(self):
-        result = scipy.optimize.root_scalar(self.residual_function, method='brentq', xtol=1e-5, bracket=[np.radians(0.1), np.radians(90)])
+        result = scipy.optimize.root_scalar(self.residual_function, method='brentq', xtol=1e-5, bracket=[np.radians(0.0), np.radians(90)])
         if not result.converged:
             raise RuntimeError("Root finding did not converge")
 
         phi = result.root
-        alpha, Cl, Cd, F, a, a_prime, V, CT, CQ = self.section_parameters(phi)
-        dT = self.sigma * np.pi * self.propeller_params.rho * V**2 * CT * self.r * self.dr
-        dQ = self.sigma * np.pi * self.propeller_params.rho * V**2 * CQ * self.r**2 * self.dr
-        return phi, dT, dQ, alpha, a, a_prime, Cl, Cd, F, V, self.Re
+        alpha, cl, cd, F, a, a_prime, W, c_l_prime, c_d_prime = self.section_parameters(phi)
+        dT = self.sigma * np.pi * self.propeller_params.rho * W**2 * c_l_prime * self.r * self.dr
+        dQ = self.sigma * np.pi * self.propeller_params.rho * W**2 * c_d_prime * self.r**2 * self.dr
+        return phi, dT, dQ, alpha, a, a_prime, c_l_prime, c_d_prime, F, W, self.Re
 
 class PropellerAnalysis:
-    """PROPELLER ANALYSIS CLASS (EXECUTED IN PARALLEL)"""
+
     def __init__(self, propeller_geometry, propeller_params):
         self.propeller_geometry = propeller_geometry
         self.propeller_params = propeller_params
@@ -142,7 +132,6 @@ class PropellerAnalysis:
         self.results = Parallel(n_jobs=n_jobs)(all_tasks)
         for r, chord, theta, phi, alpha, Cl, Cd, a, a_prime, dT, dQ, F, V, Re in self.results:
             self.solution_data = pd.concat([self.solution_data, pd.DataFrame([[r, chord, theta, phi, alpha, Cl, Cd, a, a_prime, dT, dQ, F, V, Re]], columns=self.solution_data.columns)], ignore_index=True)
-
 
     def compute_total_forces(self):
         total_thrust = self.solution_data['dT'].sum()
