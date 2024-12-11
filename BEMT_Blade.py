@@ -48,7 +48,30 @@ class BEMT_Blade:
             self.export_data["chord"].append(self.chord_length[i] * 0.0254)
             self.export_data["twist"].append(self.twist_angle[i])
             self.export_data["airfoil"].append(airfoil)
+        self.export_data["n_blades"] = self.APC_Reader.blades
+        self.export_data["tip_radius"] = self.APC_Reader.radius * 0.0254
+        self.export_data["hub_radius"] = self.APC_Reader.get_hub_radius_from_radius_and_pitch(self.APC_Reader.radius, self.APC_Reader.pitch)
         return self.export_data
+
+    def get_hub_radius_from_radius_and_pitch(self, radius, pitch):
+        # Information derived from https://www.apcprop.com/product/ pages
+        if radius < 5:
+            raise ValueError('Tip radius must be greater than 5 inches') # no propeller with radius less than 5 inches available
+        elif radius < 8:
+            if pitch <= radius:
+                hub_outer_diameter = 0.5
+            else:
+                hub_outer_diameter = 0.65
+        elif radius < 15:
+            if pitch <= radius:
+                hub_outer_diameter = 0.8
+            else:
+                hub_outer_diameter = 0.8
+        elif radius < 18:
+            hub_outer_diameter = 1.0
+        elif radius < 21:
+            hub_outer_diameter = 1.25
+        return hub_outer_diameter * 0.0254 ## converted to meters
 
 # import numpy as np
 # Propeller_Measurement = {
