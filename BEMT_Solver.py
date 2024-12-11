@@ -25,7 +25,7 @@ class PropellerParameters:
         return (f"PropellerParameters(prop_diameter={self.prop_diameter}, hub_radius={self.hub_radius}, "
                 f"n_blades={self.n_blades}, RPM={self.RPM}, v_inf={self.v_inf}, rho={self.rho}, mu={self.mu})")
 
-
+#hoi lenny
 class SectionForces:
     """SOLVE BEMT FOR EACH SECTION"""
     def __init__(self, airfoil_coordinates, r, dr, chord, theta, propeller_params):
