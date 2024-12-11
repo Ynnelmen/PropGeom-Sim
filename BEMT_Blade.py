@@ -60,6 +60,7 @@ class BEMT_Blade:
             "twist": [],  # twist angles
             "airfoil": []  # airfoil objects
         }
+        #asdf
         for i, airfoil in enumerate(self.airfoil_sections[:-1]):
             self.export_data["r"].append(self.radial_position[i] * 0.0254) # converted to meters
             self.export_data["dr"].append(distance_to_preceeding_airfoil[i] * 0.0254)
