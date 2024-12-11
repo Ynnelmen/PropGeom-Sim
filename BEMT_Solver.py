@@ -78,7 +78,7 @@ class SectionForces:
         return np.sin(phi) / (1 + a) - self.propeller_params.v_inf / (self.propeller_params.omega * self.r) * (np.cos(phi) / (1 - a_prime))
 
     def solve(self):
-        result = scipy.optimize.root_scalar(self.residual_function, method='brentq', xtol=1e-5, bracket=[np.radians(0.0), np.radians(90)])
+        result = scipy.optimize.root_scalar(self.residual_function, method='brentq', xtol=1e-5, bracket=[np.radians(0.1), np.radians(89.9)])
         if not result.converged:
             raise RuntimeError("Root finding did not converge")
 
