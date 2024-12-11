@@ -105,7 +105,6 @@ class Airfoil_Section():
             self.center_airfoil()
         else:
             self.COM = self.getCOM()
-            # pass
 
     def draw_airfoil(self, airfoil_type):
         # decides which function to use based on airfoil type. Centers airfoil
