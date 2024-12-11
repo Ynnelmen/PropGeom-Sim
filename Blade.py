@@ -158,6 +158,8 @@ class Blade():
             self.export_data["chord"].append(self.chord_length[i] * 0.0254)
             self.export_data["twist"].append(self.twist_angle[i])
             self.export_data["airfoil"].append(airfoil)
+        self.export_data["#blades"] = self.APCReader.blades
+        self.export_data["hub_radius"] = self.radial_position[-1]
         return self.export_data
 
     def export_geometry_for_BEMT_analysis(self):

@@ -56,7 +56,7 @@ class Airfoil_Section():
         self.remove_trailing_double = 1  # 0 = No, 1 = Yes
 
         self.COM = [0, 0]
-        self.shifts = []
+        self.shifts = []  # To keep track of the Alterations to the airfoil
         self.rotations = []
         self.resizes = []
 

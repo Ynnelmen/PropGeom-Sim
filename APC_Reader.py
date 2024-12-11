@@ -13,6 +13,8 @@ class APC_Reader():
 
         self.interpret_geom_data()
         self.propeller_name = filename.split("\\")[-1].split("-")[0]
+        self.radius = self.propeller_name.split("x")[0]
+        self.pitch = self.propeller_name.split("x")[1].split("E")[0]
 
     def read_geom_data(self, filename):
         # Read geometry data from APC
@@ -59,7 +61,7 @@ class APC_Reader():
 
                 # Extract number of blades
                 if line.strip().startswith('BLADES:'):
-                    blades = int(line.strip().split()[1])
+                    self.blades = int(line.strip().split()[1])
 
         def transition_state(rad, rad_1, rad_2):
             if rad <= rad_1:
