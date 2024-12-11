@@ -3,25 +3,25 @@ import pandas as pd
 from Airfoil_Section import Airfoil_Section
 
 class BEMT_Blade:
-    def __init__(self, APCReader, interpolation_points):
-        self.APCReader = APCReader
+    def __init__(self, apc_reader, interpolation_points):
+        self.APC_Reader = apc_reader
         self.interpolation_points = interpolation_points
 
         self.get_reader_data()
         self.build_airfoil_sections()
 
     def get_reader_data(self): # giving more immediate access to the data
-        self.airfoil1 = self.APCReader.airfoil1
-        self.airfoil2 = self.APCReader.airfoil2
-        self.transition = self.APCReader.transition
-        self.thickness_ratio = self.APCReader.thickness_ratio
-        self.max_thicknesses = self.APCReader.geometry_data['MAX-THICK'].to_numpy()
-        self.chord_length = self.APCReader.chord_length
-        self.twist_angle = self.APCReader.twist_angle
-        self.radial_position = self.APCReader.radial_position
+        self.airfoil1 = self.APC_Reader.airfoil1
+        self.airfoil2 = self.APC_Reader.airfoil2
+        self.transition = self.APC_Reader.transition
+        self.thickness_ratio = self.APC_Reader.thickness_ratio
+        self.max_thicknesses = self.APC_Reader.geometry_data['MAX-THICK'].to_numpy()
+        self.chord_length = self.APC_Reader.chord_length
+        self.twist_angle = self.APC_Reader.twist_angle
+        self.radial_position = self.APC_Reader.radial_position
 
-        self.xa_trans = self.APCReader.xa_trans
-        self.ya_trans = self.APCReader.ya_trans
+        self.xa_trans = self.APC_Reader.xa_trans
+        self.ya_trans = self.APC_Reader.ya_trans
 
     def build_airfoil_sections(self):
         self.airfoil_sections = []
@@ -30,6 +30,7 @@ class BEMT_Blade:
             airfoil = Airfoil_Section(airfoil_type1=self.airfoil1[i], airfoil_type2=self.airfoil2[i],
                                       transition=self.transition[i], thickness_ratio=self.thickness_ratio[i],
                                       n=self.interpolation_points, thickness_mode="vertically", center=False)
+            airfoil._APC_cross_section_area = self.APC_Reader.cross_section_area[i]
             self.airfoil_sections.append(airfoil)
 
     def export_geometry_for_analysis(self):

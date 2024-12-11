@@ -47,7 +47,7 @@ class Airfoil_Section():
         self.n = n
         self.thickness_ratio = thickness_ratio  # Thickness ratio to chord length
         self.transition = transition
-        self.APC_CrossSectionArea = None
+        self._APC_cross_section_area = None
         # print(transition)
         self.center = center # Whether to center the airfoil in its centroid (Flächenmittelpunkt)
         self.use_cosine_spacing = use_cosine_spacing
