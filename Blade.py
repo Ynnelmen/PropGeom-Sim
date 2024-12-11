@@ -205,6 +205,7 @@ class Blade():
 
         fig, axs = plt.subplots(2, 2, figsize=(12, 10))
         plt.grid()
+        plt.text(x=0, y=0.52, s=f'{blade.APCReader.propeller_name}, SA: {self.section_adaptation}, E63A: {self.E63_correction}', fontsize=15)
 
         # First and second plots combined with secondary y-axis
         ax1 = axs[0, 0]
@@ -301,7 +302,7 @@ if __name__ == "__main__":
 
     interpolation_points = 100
     hub = Hub(interpolation_points * 2 - 1, 0.65 / 2, 0.15, 0.36)
-    apcreader = APC_Reader(os.getcwd() + r"\APC Propeller Geometry Data\10x7E-PERF.PE0")
+    apcreader = APC_Reader(os.getcwd() + r"\APC Propeller Geometry Data\10x8E-PERF.PE0")
     blade = Blade(apcreader, hub, interpolation_points, linear_interpolation=False, E63_correction=1, section_adaptation=None)
     # blade.create_blade(show=True)
     # blade.export_geometry_for_analysis()
