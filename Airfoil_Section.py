@@ -103,6 +103,8 @@ class Airfoil_Section():
         self.scale_across_chamber(self.thickness_ratio / self.get_max_thickness_vertically()* self.E63_correction)  ## [WIKIPEDIA] The thickness ratio is the maximum vertical thickness divided by the chord length.
         if self.center:
             self.center_airfoil()
+        else:
+            self.COM = self.getCOM()
             # pass
 
     def draw_airfoil(self, airfoil_type):
