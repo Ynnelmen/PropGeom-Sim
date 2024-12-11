@@ -13,8 +13,8 @@ class APC_Reader():
 
         self.interpret_geom_data()
         self.propeller_name = filename.split("\\")[-1].split("-")[0]
-        self.radius = self.propeller_name.split("x")[0]
-        self.pitch = self.propeller_name.split("x")[1].split("E")[0]
+        self.radius = float(self.propeller_name.split("x")[0])
+        self.pitch = float(self.propeller_name.split("x")[1].split("E")[0])
 
     def read_geom_data(self, filename):
         # Read geometry data from APC
