@@ -1,0 +1,2 @@
+Store here:
+all .stream files that should be processed by Stream_Processor.py

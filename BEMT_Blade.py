@@ -59,7 +59,9 @@ class BEMT_Blade:
             "chord": [],  # chord lengths
             "twist": [],  # twist angles
             "airfoil": [],  # airfoil objects
-            "COM_shift": []
+            "COM_shift": [],
+            "airfoil": [],  # airfoil objects
+            "COM_shift": [] # center of mass shift
         }
         #asdf
         for i, airfoil in enumerate(self.airfoil_sections[:-1]):
@@ -76,31 +78,12 @@ class BEMT_Blade:
 
 
 
-# import numpy as np
-# Propeller_Measurement = {
-#     'propeller_name': '10x7E',
-#     'rpm': 3005,
-#     'time': np.array([], dtype='datetime64'),
-#     'temperature': np.array([]),
-#     'atmospheric_pressure': np.array([]),
-#     "thrust": {
-#         'time': np.array([]),
-#         'thrust': np.array([])
-#     },
-#     "sound": {
-#         'time': np.array([]),
-#         "channels": {
-#             "1": np.array([]),
-#             "2": np.array([]),
-#             "3": np.array([]),
-#             "4": np.array([])
-#         },
-#         "channel_positions": { #[x, y, z], [meter]
-#             "1": [0, 0, 0],
-#             "2": [0, 0, 1],
-#             "3": [0, 1, 1],
-#             "4": [1, 0, 1]
-#         }
-#     }
-# }
+if __name__ == "__main__":
+    from APC_Reader import APC_Reader
+    import os
+    import matplotlib.pyplot as plt
 
+    propeller_data_folder = os.getcwd() + r"\APC Propeller Geometry Data"
+    apc_reader = APC_Reader(propeller_data_folder + r"\10x7E-PERF.PE0")
+    blade = BEMT_Blade(apc_reader, 100)
+    a = blade.export_geometry_for_analysis()
