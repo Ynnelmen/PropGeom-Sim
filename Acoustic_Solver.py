@@ -428,6 +428,9 @@ def f1a(compact_elements, observer, observer_time):
     R_m1m2_1d = lambda m1, m2: (1/compact_elements.a_inf * np.dot(v_vec_1d, r_hat_0d) * m2 * R_m1m2_0d(m1, m2+1) +
                                compact_elements.a_inf * m2 * (Mr_0d - M0d**2) * R_m1m2_0d(m1+1, m2+1) +
                                compact_elements.a_inf * (m1 - m2) * Mr_0d * R_m1m2_0d(m1+1, m2))
+    # R_m1m2_1d = lambda m1, m2: (1/compact_elements.a_inf * np.dot(v_vec_1d, r_hat_0d) * m2 * R_m1m2_0d(m1, m2+1) +
+    #                            compact_elements.a_inf * (m1) * Mr_0d * R_m1m2_0d(m1+1, m2)+
+    #                            -m2 * compact_elements.a_inf * R_m1m2_0d(m1+1,m2+1)*(M0d**2-Mr_0d**2))
 
 
     #2nd order derivatives
