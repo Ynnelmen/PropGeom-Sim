@@ -58,7 +58,8 @@ class BEMT_Blade:
             "dr": [],  # distances to preceding airfoil
             "chord": [],  # chord lengths
             "twist": [],  # twist angles
-            "airfoil": []  # airfoil objects
+            "airfoil": [],  # airfoil objects
+            "COM_shift": []
         }
         #asdf
         for i, airfoil in enumerate(self.airfoil_sections[:-1]):
@@ -67,6 +68,7 @@ class BEMT_Blade:
             self.export_data["chord"].append(self.chord_length[i] * 0.0254)
             self.export_data["twist"].append(self.twist_angle[i])
             self.export_data["airfoil"].append(airfoil)
+            self.export_data["COM_shift"].append([self.APC_Reader.xa_trans[i] * 0.0254, self.APC_Reader.ya_trans[i] * 0.0254])
         self.export_data["n_blades"] = self.APC_Reader.blades
         self.export_data["tip_radius"] = self.APC_Reader.radius * 0.0254
         self.export_data["hub_radius"] = self.get_hub_radius_from_radius_and_pitch(self.APC_Reader.radius, self.APC_Reader.pitch)
