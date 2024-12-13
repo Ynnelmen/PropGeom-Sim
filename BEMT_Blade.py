@@ -59,8 +59,6 @@ class BEMT_Blade:
             "chord": [],  # chord lengths
             "twist": [],  # twist angles
             "airfoil": [],  # airfoil objects
-            "COM_shift": [],
-            "airfoil": [],  # airfoil objects
             "COM_shift": [] # center of mass shift
         }
         #asdf
