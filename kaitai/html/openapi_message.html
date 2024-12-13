@@ -1,0 +1,432 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+
+    <title>OpenapiMessage format specification</title>
+  </head>
+  <body>
+           <div class="container">
+  <h1>OpenapiMessage format specification</h1>
+
+      
+<a name='type-openapi_message'></a>
+<h1>Type: OpenapiMessage</h1>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>header</td>
+<td><a href="#type-openapi_message-header">Header</a></td>
+<td></td>
+</tr>
+<tr>
+<td>28</td>
+<td>...</td>
+<td>message</td>
+<td>SwitchType(Attribute(Name(identifier(header)),identifier(message_type)),Map(EnumByLabel(identifier(e_message_type),identifier(e_signal_data),typeId(false,ArrayBuffer(header),false)) -> UserTypeFromBytes(List(signal_data),None,List(),BytesLimitType(Attribute(Name(identifier(header)),identifier(message_length)),None,false,None,None),None), EnumByLabel(identifier(e_message_type),identifier(e_data_quality),typeId(false,ArrayBuffer(header),false)) -> UserTypeFromBytes(List(data_quality),None,List(),BytesLimitType(Attribute(Name(identifier(header)),identifier(message_length)),None,false,None,None),None), EnumByLabel(identifier(e_message_type),identifier(e_interpretation),typeId(false,ArrayBuffer(header),false)) -> UserTypeFromBytes(List(interpretations),None,List(),BytesLimitType(Attribute(Name(identifier(header)),identifier(message_length)),None,false,None,None),None), Name(identifier(_)) -> BytesLimitType(Attribute(Name(identifier(header)),identifier(message_length)),None,false,None,None)),true)</td>
+<td></td>
+</tr>
+</table>
+<a name='type-openapi_message-interpretations'></a>
+<h2>Type: Interpretations</h2>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>interpretations</td>
+<td><a href="#type-openapi_message-interpretation">Interpretation</a></td>
+<td></td>
+</tr>
+</table>
+<a name='type-openapi_message-data_quality'></a>
+<h2>Type: DataQuality</h2>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>number_of_signals</td>
+<td>u2le</td>
+<td></td>
+</tr>
+<tr>
+<td>2</td>
+<td>...</td>
+<td>qualities</td>
+<td><a href="#type-openapi_message-data_quality_block">DataQualityBlock</a></td>
+<td></td>
+</tr>
+</table>
+<a name='type-openapi_message-data_quality_block'></a>
+<h2>Type: DataQualityBlock</h2>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>signal_id</td>
+<td>u2le</td>
+<td></td>
+</tr>
+<tr>
+<td>2</td>
+<td>...</td>
+<td>validity_flags</td>
+<td><a href="#type-openapi_message-validity_flags">ValidityFlags</a></td>
+<td></td>
+</tr>
+<tr>
+<td>4</td>
+<td>...</td>
+<td>reserved</td>
+<td>u2le</td>
+<td></td>
+</tr>
+</table>
+<a name='type-openapi_message-interpretation'></a>
+<h2>Type: Interpretation</h2>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>signal_id</td>
+<td>u2le</td>
+<td></td>
+</tr>
+<tr>
+<td>2</td>
+<td>...</td>
+<td>descriptor_type</td>
+<td>u2le→EDescriptorType</td>
+<td></td>
+</tr>
+<tr>
+<td>4</td>
+<td>...</td>
+<td>reserved</td>
+<td>u2le</td>
+<td></td>
+</tr>
+<tr>
+<td>6</td>
+<td>...</td>
+<td>value_length</td>
+<td>u2le</td>
+<td></td>
+</tr>
+<tr>
+<td>8</td>
+<td>...</td>
+<td>value</td>
+<td>SwitchType(Name(identifier(descriptor_type)),Map(EnumByLabel(identifier(e_descriptor_type),identifier(data_type),typeId(false,ArrayBuffer(interpretation),false)) -> IntMultiType(false,Width2,Some(LittleEndian)), EnumByLabel(identifier(e_descriptor_type),identifier(scale_factor),typeId(false,ArrayBuffer(interpretation),false)) -> FloatMultiType(Width8,Some(LittleEndian)), EnumByLabel(identifier(e_descriptor_type),identifier(unit),typeId(false,ArrayBuffer(interpretation),false)) -> UserTypeInstream(List(string),None,List()), EnumByLabel(identifier(e_descriptor_type),identifier(vector_length),typeId(false,ArrayBuffer(interpretation),false)) -> IntMultiType(false,Width2,Some(LittleEndian)), EnumByLabel(identifier(e_descriptor_type),identifier(period_time),typeId(false,ArrayBuffer(interpretation),false)) -> UserTypeInstream(List(time),None,List()), EnumByLabel(identifier(e_descriptor_type),identifier(offset),typeId(false,ArrayBuffer(interpretation),false)) -> FloatMultiType(Width8,Some(LittleEndian)), EnumByLabel(identifier(e_descriptor_type),identifier(channel_type),typeId(false,ArrayBuffer(interpretation),false)) -> IntMultiType(false,Width2,Some(LittleEndian))),true)</td>
+<td></td>
+</tr>
+<tr>
+<td>???</td>
+<td>...</td>
+<td>padding</td>
+<td>u1</td>
+<td></td>
+</tr>
+</table>
+<a name='enum-openapi_message-interpretation-e_descriptor_type'></a>
+<h3>Enum: e_descriptor_type</h3>
+
+<table class="table">
+<tr>
+<th>ID</th><th>Name</th><th>Note</th>
+</tr>
+<tr>
+<td>1</td><td>data_type</td><td></td></tr>
+</tr>
+<tr>
+<td>2</td><td>scale_factor</td><td></td></tr>
+</tr>
+<tr>
+<td>3</td><td>offset</td><td></td></tr>
+</tr>
+<tr>
+<td>4</td><td>period_time</td><td></td></tr>
+</tr>
+<tr>
+<td>5</td><td>unit</td><td></td></tr>
+</tr>
+<tr>
+<td>6</td><td>vector_length</td><td></td></tr>
+</tr>
+<tr>
+<td>7</td><td>channel_type</td><td></td></tr>
+</tr>
+</table>
+<a name='type-openapi_message-string'></a>
+<h2>Type: String</h2>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>count</td>
+<td>u2le</td>
+<td></td>
+</tr>
+<tr>
+<td>2</td>
+<td>...</td>
+<td>data</td>
+<td>str(UTF-8)</td>
+<td></td>
+</tr>
+</table>
+<a name='type-openapi_message-time_family'></a>
+<h2>Type: TimeFamily</h2>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>k</td>
+<td>u1</td>
+<td></td>
+</tr>
+<tr>
+<td>1</td>
+<td>...</td>
+<td>l</td>
+<td>u1</td>
+<td></td>
+</tr>
+<tr>
+<td>2</td>
+<td>...</td>
+<td>m</td>
+<td>u1</td>
+<td></td>
+</tr>
+<tr>
+<td>3</td>
+<td>...</td>
+<td>n</td>
+<td>u1</td>
+<td></td>
+</tr>
+</table>
+<a name='type-openapi_message-validity_flags'></a>
+<h2>Type: ValidityFlags</h2>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>f</td>
+<td>u2le</td>
+<td></td>
+</tr>
+</table>
+value instance: ValueInstanceSpec(List(types, validity_flags, instances, overload),DocSpec(None,List()),Compare(BinOp(Name(identifier(f)),BitAnd,IntNum(2)),NotEq,IntNum(0)),None,Some(CalcBooleanType))
+value instance: ValueInstanceSpec(List(types, validity_flags, instances, invalid),DocSpec(None,List()),Compare(BinOp(Name(identifier(f)),BitAnd,IntNum(8)),NotEq,IntNum(0)),None,Some(CalcBooleanType))
+value instance: ValueInstanceSpec(List(types, validity_flags, instances, overrun),DocSpec(None,List()),Compare(BinOp(Name(identifier(f)),BitAnd,IntNum(16)),NotEq,IntNum(0)),None,Some(CalcBooleanType))
+<a name='type-openapi_message-signal_data'></a>
+<h2>Type: SignalData</h2>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>number_of_signals</td>
+<td>u2le</td>
+<td></td>
+</tr>
+<tr>
+<td>2</td>
+<td>...</td>
+<td>reserved</td>
+<td>u2le</td>
+<td></td>
+</tr>
+<tr>
+<td>4</td>
+<td>...</td>
+<td>signals</td>
+<td><a href="#type-openapi_message-signal_block">SignalBlock</a></td>
+<td></td>
+</tr>
+</table>
+<a name='type-openapi_message-header'></a>
+<h2>Type: Header</h2>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>magic</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>2</td>
+<td>...</td>
+<td>header_length</td>
+<td>u2le</td>
+<td></td>
+</tr>
+<tr>
+<td>4</td>
+<td>...</td>
+<td>message_type</td>
+<td>u2le→EMessageType</td>
+<td></td>
+</tr>
+<tr>
+<td>6</td>
+<td>...</td>
+<td>reserved1</td>
+<td>u2le</td>
+<td></td>
+</tr>
+<tr>
+<td>8</td>
+<td>...</td>
+<td>reserved2</td>
+<td>u4le</td>
+<td></td>
+</tr>
+<tr>
+<td>12</td>
+<td>...</td>
+<td>time</td>
+<td><a href="#type-openapi_message-time">Time</a></td>
+<td></td>
+</tr>
+<tr>
+<td>24</td>
+<td>...</td>
+<td>message_length</td>
+<td>u4le</td>
+<td></td>
+</tr>
+</table>
+<a name='enum-openapi_message-header-e_message_type'></a>
+<h3>Enum: e_message_type</h3>
+
+<table class="table">
+<tr>
+<th>ID</th><th>Name</th><th>Note</th>
+</tr>
+<tr>
+<td>1</td><td>e_signal_data</td><td></td></tr>
+</tr>
+<tr>
+<td>2</td><td>e_data_quality</td><td></td></tr>
+</tr>
+<tr>
+<td>8</td><td>e_interpretation</td><td></td></tr>
+</tr>
+<tr>
+<td>11</td><td>e_aux_sequence_data</td><td></td></tr>
+</tr>
+</table>
+<a name='type-openapi_message-signal_block'></a>
+<h2>Type: SignalBlock</h2>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>signal_id</td>
+<td>s2le</td>
+<td></td>
+</tr>
+<tr>
+<td>2</td>
+<td>...</td>
+<td>number_of_values</td>
+<td>s2le</td>
+<td></td>
+</tr>
+<tr>
+<td>4</td>
+<td>...</td>
+<td>values</td>
+<td><a href="#type-openapi_message-value">Value</a></td>
+<td></td>
+</tr>
+</table>
+<a name='type-openapi_message-time'></a>
+<h2>Type: Time</h2>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>time_family</td>
+<td><a href="#type-openapi_message-time_family">TimeFamily</a></td>
+<td></td>
+</tr>
+<tr>
+<td>4</td>
+<td>...</td>
+<td>time_count</td>
+<td>u8le</td>
+<td></td>
+</tr>
+</table>
+<a name='type-openapi_message-value'></a>
+<h2>Type: Value</h2>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>value1</td>
+<td>u1</td>
+<td></td>
+</tr>
+<tr>
+<td>1</td>
+<td>...</td>
+<td>value2</td>
+<td>u1</td>
+<td></td>
+</tr>
+<tr>
+<td>2</td>
+<td>...</td>
+<td>value3</td>
+<td>s1</td>
+<td></td>
+</tr>
+</table>
+value instance: ValueInstanceSpec(List(types, value, instances, calc_value),DocSpec(None,List()),BinOp(BinOp(Name(identifier(value1)),Add,BinOp(Name(identifier(value2)),LShift,IntNum(8))),Add,BinOp(Name(identifier(value3)),LShift,IntNum(16))),None,Some(CalcIntType))
+
+  </div>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+  </body>
+</html>
+      
