@@ -1,6 +1,5 @@
-# import cadquery as cq
+
 import numpy as np
-import pandas as pd
 
 from Airfoil_Section import Airfoil_Section
 from ocp_vscode import show_object
