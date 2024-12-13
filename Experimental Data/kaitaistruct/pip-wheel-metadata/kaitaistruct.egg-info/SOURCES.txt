@@ -1,0 +1,12 @@
+LICENSE
+README.md
+kaitaistruct.py
+pyproject.toml
+setup.cfg
+setup.py
+C:/Users/alezeller/Desktop/open-api-tutorials/src/kaitaistruct/pip-wheel-metadata/kaitaistruct.egg-info/PKG-INFO
+C:/Users/alezeller/Desktop/open-api-tutorials/src/kaitaistruct/pip-wheel-metadata/kaitaistruct.egg-info/SOURCES.txt
+C:/Users/alezeller/Desktop/open-api-tutorials/src/kaitaistruct/pip-wheel-metadata/kaitaistruct.egg-info/dependency_links.txt
+C:/Users/alezeller/Desktop/open-api-tutorials/src/kaitaistruct/pip-wheel-metadata/kaitaistruct.egg-info/requires.txt
+C:/Users/alezeller/Desktop/open-api-tutorials/src/kaitaistruct/pip-wheel-metadata/kaitaistruct.egg-info/top_level.txt
+C:/Users/alezeller/Desktop/open-api-tutorials/src/kaitaistruct/pip-wheel-metadata/kaitaistruct.egg-info/zip-safe
