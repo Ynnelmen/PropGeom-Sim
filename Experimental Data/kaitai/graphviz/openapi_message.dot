@@ -1,0 +1,206 @@
+digraph {
+	rankdir=LR;
+	node [shape=plaintext];
+	subgraph cluster__openapi_message {
+		label="OpenapiMessage";
+		graph[style=dotted];
+
+		openapi_message__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+			<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+			<TR><TD PORT="header_pos">0</TD><TD PORT="header_size">28</TD><TD>Header</TD><TD PORT="header_type">header</TD></TR>
+			<TR><TD PORT="message_pos">28</TD><TD PORT="message_size">...</TD><TD>switch (header.message_type)</TD><TD PORT="message_type">message</TD></TR>
+		</TABLE>>];
+openapi_message__seq_message_switch [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+	<TR><TD BGCOLOR="#F0F2E4">case</TD><TD BGCOLOR="#F0F2E4">type</TD></TR>
+	<TR><TD>:e_message_type_e_signal_data</TD><TD PORT="case0">SignalData</TD></TR>
+	<TR><TD>:e_message_type_e_data_quality</TD><TD PORT="case1">DataQuality</TD></TR>
+	<TR><TD>:e_message_type_e_interpretation</TD><TD PORT="case2">Interpretations</TD></TR>
+</TABLE>>];
+		subgraph cluster__interpretations {
+			label="OpenapiMessage::Interpretations";
+			graph[style=dotted];
+
+			interpretations__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="interpretations_pos">0</TD><TD PORT="interpretations_size">...</TD><TD>Interpretation</TD><TD PORT="interpretations_type">interpretations</TD></TR>
+				<TR><TD COLSPAN="4" PORT="interpretations__repeat">repeat to end of stream</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__data_quality {
+			label="OpenapiMessage::DataQuality";
+			graph[style=dotted];
+
+			data_quality__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="number_of_signals_pos">0</TD><TD PORT="number_of_signals_size">2</TD><TD>u2le</TD><TD PORT="number_of_signals_type">number_of_signals</TD></TR>
+				<TR><TD PORT="qualities_pos">2</TD><TD PORT="qualities_size">6</TD><TD>DataQualityBlock</TD><TD PORT="qualities_type">qualities</TD></TR>
+				<TR><TD COLSPAN="4" PORT="qualities__repeat">repeat number_of_signals times</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__data_quality_block {
+			label="OpenapiMessage::DataQualityBlock";
+			graph[style=dotted];
+
+			data_quality_block__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="signal_id_pos">0</TD><TD PORT="signal_id_size">2</TD><TD>u2le</TD><TD PORT="signal_id_type">signal_id</TD></TR>
+				<TR><TD PORT="validity_flags_pos">2</TD><TD PORT="validity_flags_size">2</TD><TD>ValidityFlags</TD><TD PORT="validity_flags_type">validity_flags</TD></TR>
+				<TR><TD PORT="reserved_pos">4</TD><TD PORT="reserved_size">2</TD><TD>u2le</TD><TD PORT="reserved_type">reserved</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__interpretation {
+			label="OpenapiMessage::Interpretation";
+			graph[style=dotted];
+
+			interpretation__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="signal_id_pos">0</TD><TD PORT="signal_id_size">2</TD><TD>u2le</TD><TD PORT="signal_id_type">signal_id</TD></TR>
+				<TR><TD PORT="descriptor_type_pos">2</TD><TD PORT="descriptor_type_size">2</TD><TD>u2le→EDescriptorType</TD><TD PORT="descriptor_type_type">descriptor_type</TD></TR>
+				<TR><TD PORT="reserved_pos">4</TD><TD PORT="reserved_size">2</TD><TD>u2le</TD><TD PORT="reserved_type">reserved</TD></TR>
+				<TR><TD PORT="value_length_pos">6</TD><TD PORT="value_length_size">2</TD><TD>u2le</TD><TD PORT="value_length_type">value_length</TD></TR>
+				<TR><TD PORT="value_pos">8</TD><TD PORT="value_size">...</TD><TD>switch (descriptor_type)</TD><TD PORT="value_type">value</TD></TR>
+				<TR><TD PORT="padding_pos">...</TD><TD PORT="padding_size">1</TD><TD>u1</TD><TD PORT="padding_type">padding</TD></TR>
+				<TR><TD COLSPAN="4" PORT="padding__repeat">repeat ((4 - (_io.pos % 4)) &amp; 3) times</TD></TR>
+			</TABLE>>];
+interpretation__seq_value_switch [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+	<TR><TD BGCOLOR="#F0F2E4">case</TD><TD BGCOLOR="#F0F2E4">type</TD></TR>
+	<TR><TD>:e_descriptor_type_unit</TD><TD PORT="case0">String</TD></TR>
+	<TR><TD>:e_descriptor_type_period_time</TD><TD PORT="case1">Time</TD></TR>
+</TABLE>>];
+		}
+		subgraph cluster__string {
+			label="OpenapiMessage::String";
+			graph[style=dotted];
+
+			string__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="count_pos">0</TD><TD PORT="count_size">2</TD><TD>u2le</TD><TD PORT="count_type">count</TD></TR>
+				<TR><TD PORT="data_pos">2</TD><TD PORT="data_size">count</TD><TD>str(UTF-8)</TD><TD PORT="data_type">data</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__time_family {
+			label="OpenapiMessage::TimeFamily";
+			graph[style=dotted];
+
+			time_family__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="k_pos">0</TD><TD PORT="k_size">1</TD><TD>u1</TD><TD PORT="k_type">k</TD></TR>
+				<TR><TD PORT="l_pos">1</TD><TD PORT="l_size">1</TD><TD>u1</TD><TD PORT="l_type">l</TD></TR>
+				<TR><TD PORT="m_pos">2</TD><TD PORT="m_size">1</TD><TD>u1</TD><TD PORT="m_type">m</TD></TR>
+				<TR><TD PORT="n_pos">3</TD><TD PORT="n_size">1</TD><TD>u1</TD><TD PORT="n_type">n</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__validity_flags {
+			label="OpenapiMessage::ValidityFlags";
+			graph[style=dotted];
+
+			validity_flags__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="f_pos">0</TD><TD PORT="f_size">2</TD><TD>u2le</TD><TD PORT="f_type">f</TD></TR>
+			</TABLE>>];
+			validity_flags__inst__overload [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">id</TD><TD BGCOLOR="#E0FFE0">value</TD></TR>
+				<TR><TD>overload</TD><TD>(f &amp; 2) != 0</TD></TR>
+			</TABLE>>];
+			validity_flags__inst__invalid [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">id</TD><TD BGCOLOR="#E0FFE0">value</TD></TR>
+				<TR><TD>invalid</TD><TD>(f &amp; 8) != 0</TD></TR>
+			</TABLE>>];
+			validity_flags__inst__overrun [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">id</TD><TD BGCOLOR="#E0FFE0">value</TD></TR>
+				<TR><TD>overrun</TD><TD>(f &amp; 16) != 0</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__signal_data {
+			label="OpenapiMessage::SignalData";
+			graph[style=dotted];
+
+			signal_data__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="number_of_signals_pos">0</TD><TD PORT="number_of_signals_size">2</TD><TD>u2le</TD><TD PORT="number_of_signals_type">number_of_signals</TD></TR>
+				<TR><TD PORT="reserved_pos">2</TD><TD PORT="reserved_size">2</TD><TD>u2le</TD><TD PORT="reserved_type">reserved</TD></TR>
+				<TR><TD PORT="signals_pos">4</TD><TD PORT="signals_size">...</TD><TD>SignalBlock</TD><TD PORT="signals_type">signals</TD></TR>
+				<TR><TD COLSPAN="4" PORT="signals__repeat">repeat number_of_signals times</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__header {
+			label="OpenapiMessage::Header";
+			graph[style=dotted];
+
+			header__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="magic_pos">0</TD><TD PORT="magic_size">2</TD><TD></TD><TD PORT="magic_type">magic</TD></TR>
+				<TR><TD PORT="header_length_pos">2</TD><TD PORT="header_length_size">2</TD><TD>u2le</TD><TD PORT="header_length_type">header_length</TD></TR>
+				<TR><TD PORT="message_type_pos">4</TD><TD PORT="message_type_size">2</TD><TD>u2le→EMessageType</TD><TD PORT="message_type_type">message_type</TD></TR>
+				<TR><TD PORT="reserved1_pos">6</TD><TD PORT="reserved1_size">2</TD><TD>u2le</TD><TD PORT="reserved1_type">reserved1</TD></TR>
+				<TR><TD PORT="reserved2_pos">8</TD><TD PORT="reserved2_size">4</TD><TD>u4le</TD><TD PORT="reserved2_type">reserved2</TD></TR>
+				<TR><TD PORT="time_pos">12</TD><TD PORT="time_size">12</TD><TD>Time</TD><TD PORT="time_type">time</TD></TR>
+				<TR><TD PORT="message_length_pos">24</TD><TD PORT="message_length_size">4</TD><TD>u4le</TD><TD PORT="message_length_type">message_length</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__signal_block {
+			label="OpenapiMessage::SignalBlock";
+			graph[style=dotted];
+
+			signal_block__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="signal_id_pos">0</TD><TD PORT="signal_id_size">2</TD><TD>s2le</TD><TD PORT="signal_id_type">signal_id</TD></TR>
+				<TR><TD PORT="number_of_values_pos">2</TD><TD PORT="number_of_values_size">2</TD><TD>s2le</TD><TD PORT="number_of_values_type">number_of_values</TD></TR>
+				<TR><TD PORT="values_pos">4</TD><TD PORT="values_size">3</TD><TD>Value</TD><TD PORT="values_type">values</TD></TR>
+				<TR><TD COLSPAN="4" PORT="values__repeat">repeat number_of_values times</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__time {
+			label="OpenapiMessage::Time";
+			graph[style=dotted];
+
+			time__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="time_family_pos">0</TD><TD PORT="time_family_size">4</TD><TD>TimeFamily</TD><TD PORT="time_family_type">time_family</TD></TR>
+				<TR><TD PORT="time_count_pos">4</TD><TD PORT="time_count_size">8</TD><TD>u8le</TD><TD PORT="time_count_type">time_count</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__value {
+			label="OpenapiMessage::Value";
+			graph[style=dotted];
+
+			value__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="value1_pos">0</TD><TD PORT="value1_size">1</TD><TD>u1</TD><TD PORT="value1_type">value1</TD></TR>
+				<TR><TD PORT="value2_pos">1</TD><TD PORT="value2_size">1</TD><TD>u1</TD><TD PORT="value2_type">value2</TD></TR>
+				<TR><TD PORT="value3_pos">2</TD><TD PORT="value3_size">1</TD><TD>s1</TD><TD PORT="value3_type">value3</TD></TR>
+			</TABLE>>];
+			value__inst__calc_value [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">id</TD><TD BGCOLOR="#E0FFE0">value</TD></TR>
+				<TR><TD>calc_value</TD><TD>((value1 + (value2 &lt;&lt; 8)) + (value3 &lt;&lt; 16))</TD></TR>
+			</TABLE>>];
+		}
+	}
+	openapi_message__seq:header_type -> header__seq [style=bold];
+	openapi_message__seq:message_type -> openapi_message__seq_message_switch [style=bold];
+	openapi_message__seq_message_switch:case0 -> signal_data__seq [style=bold];
+	openapi_message__seq_message_switch:case1 -> data_quality__seq [style=bold];
+	openapi_message__seq_message_switch:case2 -> interpretations__seq [style=bold];
+	header__seq:message_type_type -> openapi_message__seq:message_type [color="#404040"];
+	interpretations__seq:interpretations_type -> interpretation__seq [style=bold];
+	data_quality__seq:qualities_type -> data_quality_block__seq [style=bold];
+	data_quality__seq:number_of_signals_type -> data_quality__seq:qualities__repeat [color="#404040"];
+	data_quality_block__seq:validity_flags_type -> validity_flags__seq [style=bold];
+	interpretation__seq:value_type -> interpretation__seq_value_switch [style=bold];
+	interpretation__seq_value_switch:case0 -> string__seq [style=bold];
+	interpretation__seq_value_switch:case1 -> time__seq [style=bold];
+	interpretation__seq:descriptor_type_type -> interpretation__seq:value_type [color="#404040"];
+	string__seq:count_type -> string__seq:data_size [color="#404040"];
+	validity_flags__seq:f_type -> validity_flags__inst__overload [color="#404040"];
+	validity_flags__seq:f_type -> validity_flags__inst__invalid [color="#404040"];
+	validity_flags__seq:f_type -> validity_flags__inst__overrun [color="#404040"];
+	signal_data__seq:signals_type -> signal_block__seq [style=bold];
+	signal_data__seq:number_of_signals_type -> signal_data__seq:signals__repeat [color="#404040"];
+	header__seq:time_type -> time__seq [style=bold];
+	signal_block__seq:values_type -> value__seq [style=bold];
+	signal_block__seq:number_of_values_type -> signal_block__seq:values__repeat [color="#404040"];
+	time__seq:time_family_type -> time_family__seq [style=bold];
+	value__seq:value1_type -> value__inst__calc_value [color="#404040"];
+	value__seq:value2_type -> value__inst__calc_value [color="#404040"];
+	value__seq:value3_type -> value__inst__calc_value [color="#404040"];
+}
