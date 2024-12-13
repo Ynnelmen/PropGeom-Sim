@@ -461,8 +461,9 @@ class Airfoil_Section():
         self.translate([-Cx, -Cy])
         return self.X, self.Y
 
-    def calculate_cross_section_area(self):
-        self.A = np.abs(0.5 * (np.sum(self.X[:-1] * self.Y[1:] - self.X[1:] * self.Y[:-1]) + self.X[-1] * self.Y[0] - self.X[0] * self.Y[-1]))
+    def calculate_cross_section_area(self, chord_length=1):
+        scalar = chord_length / self.get_chord_length()
+        self.A = np.abs(0.5 * (np.sum(self.X[:-1] * self.Y[1:] - self.X[1:] * self.Y[:-1]) + self.X[-1] * self.Y[0] - self.X[0] * self.Y[-1])) ** scalar
         return self.A
 
     def get_chord_length(self):
@@ -470,7 +471,6 @@ class Airfoil_Section():
 
     def get_highest_point(self):
         return self.Y.max()
-
 
     def get_max_thickness(self):
         match self.thickness_mode:
