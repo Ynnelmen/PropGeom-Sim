@@ -1,7 +1,6 @@
 import numpy as np
 from scipy.interpolate import InterpolatedUnivariateSpline
 
-
 """COMPACT F1A OBJECT"""
 class F1AOutput:
     def __init__(self, t, p_m, p_d):
@@ -182,7 +181,8 @@ class AcousticObserver:
         self.t = t_common
         self.p_m = p_m_interp
         self.p_d = p_d_interp
-        self.p_tot = p_m_interp+p_d_interp
+        p_tot = p_m_interp+p_d_interp
+        self.p_tot = p_tot - np.mean(p_tot)
         #####
         self._compute_pressure_amplitude()
         self._compute_SPL_Spectrum()
