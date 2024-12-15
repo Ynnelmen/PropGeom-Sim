@@ -61,7 +61,7 @@ class Job:
             self.observer_manager = observer_manager
 
     def run_BEMT(self):
-        print(f"Running BEMT for propeller {self.propeller_name}...")
+        print(f"Running BEMT for propeller {self.propeller_name} at {self.RPM} RPM and {self.v_inf} m/s...")
 
         #Create geometry object for BEMT
         self.propeller_params = PropellerParameters(
