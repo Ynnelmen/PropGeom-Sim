@@ -1,61 +1,69 @@
+#General packages
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 import os
 from scipy.interpolate import griddata
-from APC_Reader import APC_Reader
-from BEMT_Blade import BEMT_Blade
-from BEMT_Solver import PropellerAnalysis, PropellerParameters
-from Acoustic_Solver import CompactSourceElement, f1a, common_obs_time, combine_pressure_history, acousticReceiver, ObserverManager
 import warnings
 warnings.filterwarnings("ignore")
 
+#Geometry creation
+from APC_Reader import APC_Reader
+from BEMT_Blade import BEMT_Blade
+
+#BEMT Analysis
+from BEMT_Solver import PropellerParameters, PropellerAnalysis
+
+#Acoustic Analysis
+from Acoustic_Solver import CompactSourceElement
+from Observer_Manager import ObserverManager
+
 class Job:
-    def __init__(self, name="default", description="None", propeller_name="10x7E", interpolation_points=200, blade=None, observer_manager=None, RPM=5000):
-        self.name = name
-        self.description = description
-        self.propeller_name = propeller_name.upper()  # e.g. "10x7E"
-        self.interpolation_points = interpolation_points
+    interpolation_points = 200
+    def __init__(self, propeller_name="10x7E", RPM=5000, v_inf=0, revolutions=6, observer_manager=None):
+        self.propeller_name = propeller_name.upper()
 
+        # --- GEOMETRY ---
+        # Geometrical propeller parameters and export for analysis
         self.apc_reader = APC_Reader(os.getcwd() + fr"\APC Propeller Geometry Data\{propeller_name}-PERF.PE0")
-        if blade is None:
-            blade = BEMT_Blade(self.apc_reader, interpolation_points)
-        self.propeller_geometry = blade.export_geometry_for_analysis()
+        self.blade = BEMT_Blade(self.apc_reader, self.interpolation_points)
+        self.bemt_input = self.blade.export_geometry_for_analysis()
 
-        # Geometrical Propeller Parameters
-        self.prop_radius = int(self.propeller_name.split("X")[0]) / 2 * 0.0254
-        self.hub_radius = 0.4 * 0.0254 # todo adapt to propeller name
-        self.n_blades = 2  # todo: read from APC file
-        self.blade_angles = np.linspace(0, 2 * np.pi, self.n_blades, endpoint=False)
+        # Global Propeller Parameters
+        self.prop_radius = self.bemt_input['tip_radius']
+        self.hub_radius = self.bemt_input['hub_radius']
+        self.n_blades = self.bemt_input['n_blades']
+        self.revolutions = revolutions
 
-        # Operating conditions
-        self.RPM = RPM
-        self.v_inf = 0
-        self.omega = 2 * np.pi * self.RPM / 60  # Angular velocity in rad/s
-
-        # Analysis parameters
-        self.period = 1 / self.RPM * 60 # time to complete one revolution
-        self.n_periods = 4  # number of revolutions to be evaluated
-        self.n_source_times = 1000  # number of source times to be evaluated
-        self.source_times = np.arange(0, self.n_source_times)*(self.period*self.n_periods/(self.n_source_times-1))
-
-        # Fluid parameters
+        # Fluid Parameters
         self.rho = 1.225
         self.mu = 1.81e-5
         self.a_inf = 343
+
+        # Operating conditions
+        self.RPM = RPM
+        self.v_inf = v_inf
+        self.omega = 2 * np.pi * self.RPM / 60  # Angular velocity in rad/s
 
         # Results
         self.total_thrust = None
         self.total_torque = None
         self.Cp = None
         self.Ct = None
-        self.receivers = []
+        self.observer_list = []
 
+        # Observer preparation
         if observer_manager is None:
-            self.observer_manager = ObserverManager(type="fibonacci", number_of_observers=100)
+            r_observer = [[0, 1.8, 0],
+                          [1.8, 0, 0],
+                          [0, 0, 1.8]]
+            observer_manager = ObserverManager().from_positions(r_observer)
         else:
             self.observer_manager = observer_manager
 
+    def run_BEMT(self):
+        print(f"Running BEMT for propeller {self.propeller_name}...")
+
+        #Create geometry object for BEMT
         self.propeller_params = PropellerParameters(
             prop_radius=self.prop_radius,
             hub_radius=self.hub_radius,
@@ -67,60 +75,81 @@ class Job:
             v_inf=self.v_inf
         )
 
-    def run_BEMT(self):
-        print(f"Running BEMT for propeller {self.propeller_name}...")
         # Create the analysis object
-        self.analysis = PropellerAnalysis(
-            propeller_geometry=self.propeller_geometry,
+        self.bemt_analysis = PropellerAnalysis(
+            propeller_geometry=self.bemt_input,
             propeller_params=self.propeller_params
         )
 
         # Run BEMT
-        n_jobs = 12
-        self.analysis.run_BEMT(n_jobs=n_jobs)
+        n_jobs = 8
+        self.bemt_analysis.run_BEMT(n_jobs=n_jobs)
 
         # Compute total thrust, torque, CT and CP
-        self.total_thrust, self.total_torque, self.Ct, self.Cp = self.analysis.compute_total_forces()
-        print(f"Total thrust: {self.total_thrust} N")
+        self.total_thrust, self.total_torque, self.Ct, self.Cp = self.bemt_analysis.compute_total_forces()
 
     def run_acoustic_analysis(self):
         if self.total_thrust is None:
             self.run_BEMT()
-        print("Running acoustic analysis...")
-        self.compact_source_elements = np.empty((self.n_source_times, len(self.propeller_geometry['r']), self.n_blades), dtype=object)
-        self.observer_time = np.empty((self.n_source_times, len(self.propeller_geometry['r']), self.n_blades, len(self.observer_manager)), dtype=object)
-        self.f1a_output = np.empty((self.n_source_times, len(self.propeller_geometry['r']), self.n_blades, len(self.observer_manager)), dtype=object)
 
-        self.dTdr = self.analysis.solution_data['dT'] / self.propeller_geometry['dr'] / self.n_blades
-        self.dQdr = self.analysis.solution_data['dQ'] / self.propeller_geometry['dr'] / self.propeller_geometry['r'] / self.n_blades
-        self.dR = np.zeros(len(self.dTdr))
+        #Temporal discretization in observer coordinate system
+        self.revolutions = self.revolutions
+        duration = self.revolutions * (2*np.pi/self.omega) 
+        blade_passing_period = duration / self.revolutions / self.n_blades
+        observer_time_range = self.revolutions*blade_passing_period
+        num_obs_times = 50*self.revolutions
 
-        for i in range(self.n_source_times):
-            for j in range(len(self.propeller_geometry['r'])):
-                for k in range(self.n_blades):
-                    # [rho, a_inf, r, blade_angle, dr, area, dT, dR, dQ, tau]
-                    element = CompactSourceElement.from_params(
-                        self.rho, self.a_inf, self.propeller_geometry['r'][j], self.blade_angles[k],
-                        self.propeller_geometry['dr'][j],
-                        self.propeller_geometry['airfoil'][j].calculate_cross_section_area()*0.0254**2,
-                        -self.dTdr[j], self.dR[j], self.dQdr[j], self.source_times[i]
-                    )
-                    self.compact_source_elements[i, j, k] = element.coordinate_transform(omega=self.omega, v_inf=self.v_inf)
+        #Temporal discretization in source coordinate system
+        n_source_times = 2*num_obs_times
+        dt = duration/(n_source_times-1)
+        src_times = np.arange(0,n_source_times)*dt
 
-                    for o_nr, observer in enumerate(self.observer_manager):
-                        self.observer_time[i, j, k, o_nr] = element.time_to_observer(observer)
-                        self.f1a_output[i, j, k, o_nr] = f1a(self.compact_source_elements[i, j, k], observer,
-                                                       self.observer_time[i, j, k, o_nr])
+        #Prepare data for acoustic analysis
+        radial_section = self.bemt_input['r']
+        n_sections = len(radial_section)
+        dr = self.bemt_input['dr']
+        blade_angles = 2*np.pi/self.n_blades * np.arange(0, self.n_blades)
+        airfoil_area = []
+        COM_x = []
+        COM_y = []
+        for i in range(len(self.bemt_input['airfoil'])):
+            #airfoil_area.append(BEMT_input['airfoil'][i]._APC_cross_section_area * 0.0254**2)
+            airfoil_area.append(self.bemt_input['airfoil'][i].calculate_cross_section_area() * self.bemt_input['chord'][i]**2)
+            COM_x.append(self.bemt_input['COM_shift'][i][0])
+            COM_y.append(self.bemt_input['COM_shift'][i][1])
+        dT = self.bemt_analysis.solution_data['dT'] / self.bemt_input['dr'] / self.n_blades
+        dQ = self.bemt_analysis.solution_data['dQ'] / self.bemt_input['dr'] / self.bemt_input['r'] / self.n_blades
+        dR = np.zeros_like(dT)
 
-        obs_time_range = self.n_periods * self.period / self.n_blades
+        for observer in self.observer_manager:
 
-        for o_nr, observer in enumerate(self.observer_manager):
-            self.t_common, self.time_matrix, self.pressure_matrix_m, self.pressure_matrix_d = common_obs_time(self.f1a_output[:, :, :, o_nr],
-                                                                                                              obs_time_range,2000)
-            observer.pressure_history = combine_pressure_history(self.time_matrix, self.pressure_matrix_m, self.pressure_matrix_d, self.t_common)
-            receiver = acousticReceiver(observer=observer)
-            self.receivers.append(receiver)
+            #Construct compact source elements, apply coordinate transformation from \nu to y-frame, compute observer times for all compact elements and perform f1a calculation
+            compact_source_elements = np.empty((n_source_times, n_sections, self.n_blades), dtype=object)
+            observer_time = np.empty((n_source_times, n_sections, self.n_blades), dtype=float)
+            F1A_output = np.empty((n_source_times, n_sections, self.n_blades), dtype=object)
 
+            for i in range(n_source_times):
+                for j in range(n_sections):
+                    for k in range(self.n_blades):
+                        #compact source element
+                        element = CompactSourceElement.from_params(
+                            self.rho, self.a_inf, radial_section[j], blade_angles[k], COM_x[j], COM_y[j], dr[j], airfoil_area[j] , -dT[j] , dR[j], dQ[j], src_times[i]
+                        )
+                        compact_source_elements[i,j,k] = element.coordinate_transform(omega=self.omega, v_inf=self.v_inf)
+
+                        #observer time
+                        obs_time = element.time_to_observer(observer)
+                        observer_time[i,j,k] = obs_time
+
+                        #f1a calculation
+                        f1a_output = element.f1a_calculation(element, observer, obs_time)
+                        F1A_output[i,j,k] = f1a_output
+
+            #combine the source elements at the observer position
+            observer.combine_source_elements(f1a_output=F1A_output, time_range=observer_time_range, n_common_time_steps=num_obs_times)
+
+
+"""
     def plot_pressure_history_single(self, observer_nr=0):
         fig, axs = plt.subplots(1, 1)
         fig.set_figheight(7)
@@ -301,3 +330,4 @@ self.run_acoustic_analysis()
 # # self.OSPL_analysis(1)
 # self.OSPL_analysis_all_observers()
 # self.plot_OSPL_surface()
+"""
