@@ -33,23 +33,23 @@ class BEMT_Blade:
 
     def get_hub_radius_from_radius_and_pitch(self, radius, pitch):
         # Information derived from https://www.apcprop.com/product/ pages
-        if radius < 5:
+        if 2*radius < 5:
             raise ValueError('Tip radius must be greater than 5 inches') # no propeller with radius less than 5 inches available
-        elif radius < 8:
+        elif 2*radius < 8:
             if pitch <= radius:
                 hub_outer_diameter = 0.5
             else:
                 hub_outer_diameter = 0.65
-        elif radius < 15:
+        elif 2*radius < 15:
             if pitch <= radius:
                 hub_outer_diameter = 0.8
             else:
                 hub_outer_diameter = 0.8
-        elif radius < 18:
+        elif 2*radius < 18:
             hub_outer_diameter = 1.0
-        elif radius < 21:
+        elif 2*radius < 21:
             hub_outer_diameter = 1.25
-        return hub_outer_diameter * 0.0254 ## converted to meters
+        return hub_outer_diameter/2 * 0.0254 ## converted to meters
 
     def export_geometry_for_analysis(self):
         distance_to_preceeding_airfoil = [self.radial_position[i] - self.radial_position[i-1] for i in range(1, len(self.radial_position))] + [0]

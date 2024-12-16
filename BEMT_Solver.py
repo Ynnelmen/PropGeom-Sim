@@ -4,7 +4,6 @@ import scipy.optimize
 import pandas as pd
 import aerosandbox as asb
 from joblib import Parallel, delayed
-#test test test
 
 class PropellerParameters:
     """DEFINE GLOBAL PROPELLER PARAMETERS"""
@@ -25,7 +24,6 @@ class PropellerParameters:
         return (f"PropellerParameters(prop_diameter={self.prop_diameter}, hub_radius={self.hub_radius}, "
                 f"n_blades={self.n_blades}, RPM={self.RPM}, v_inf={self.v_inf}, rho={self.rho}, mu={self.mu})")
 
-#hoi lenny
 class SectionForces:
     """SOLVE BEMT FOR EACH SECTION"""
     def __init__(self, airfoil_coordinates, r, dr, chord, theta, propeller_params):
@@ -35,7 +33,7 @@ class SectionForces:
         self.chord = chord
         self.theta = theta
         self.propeller_params = propeller_params
-        self.Re = 1e6  #Initial guess for Reynolds number
+        self.Re = 1e5  #Initial guess for Reynolds number
         self.Ma = 0.05 #Initial guess for Mach number
 
     @property
@@ -86,7 +84,7 @@ class SectionForces:
         alpha, cl, cd, F, a, a_prime, W, c_l_prime, c_d_prime = self.section_parameters(phi)
         dT = self.sigma * np.pi * self.propeller_params.rho * W**2 * c_l_prime * self.r * self.dr
         dQ = self.sigma * np.pi * self.propeller_params.rho * W**2 * c_d_prime * self.r**2 * self.dr
-        return phi, dT, dQ, alpha, a, a_prime, c_l_prime, c_d_prime, F, W, self.Re
+        return phi, dT, dQ, alpha, a, a_prime, c_l_prime, c_d_prime, F, W, self.Re, self.Ma
 
 class PropellerAnalysis:
 
@@ -95,7 +93,7 @@ class PropellerAnalysis:
         self.propeller_params = propeller_params
         self.solution_data = pd.DataFrame(columns=[
             "radius", "chord", "twist", "phi", "alpha", "Cl", "Cd",
-            "a", "a_prime", "dT", "dQ", "F", "V", "Re"
+            "a", "a_prime", "dT", "dQ", "F", "W", "Re", "Ma"
         ])
 
     def process_section(self, r, dr, chord, theta_deg, airfoil):
@@ -112,10 +110,10 @@ class PropellerAnalysis:
         )
 
         try:
-            phi, dT, dQ, alpha, a, a_prime, Cl, Cd, F, V, Re = section_force.solve()
+            phi, dT, dQ, alpha, a, a_prime, Cl, Cd, F, W, Re, Ma = section_force.solve()
             return [
                 r, chord, np.degrees(theta), np.degrees(phi), alpha,
-                Cl, Cd, a, a_prime, dT, dQ, F, V, Re
+                Cl, Cd, a, a_prime, dT, dQ, F, W, Re, Ma
             ]
         except RuntimeError as e:
             print(f"Error in section {r}: {e}")
@@ -130,8 +128,8 @@ class PropellerAnalysis:
                                                                                                                 self.propeller_geometry['airfoil'])
         )
         self.results = Parallel(n_jobs=n_jobs)(all_tasks)
-        for r, chord, theta, phi, alpha, Cl, Cd, a, a_prime, dT, dQ, F, V, Re in self.results:
-            self.solution_data = pd.concat([self.solution_data, pd.DataFrame([[r, chord, theta, phi, alpha, Cl, Cd, a, a_prime, dT, dQ, F, V, Re]], columns=self.solution_data.columns)], ignore_index=True)
+        for r, chord, theta, phi, alpha, Cl, Cd, a, a_prime, dT, dQ, F, W, Re, Ma in self.results:
+            self.solution_data = pd.concat([self.solution_data, pd.DataFrame([[r, chord, theta, phi, alpha, Cl, Cd, a, a_prime, dT, dQ, F, W, Re, Ma]], columns=self.solution_data.columns)], ignore_index=True)
 
     def compute_total_forces(self):
         total_thrust = self.solution_data['dT'].sum()
