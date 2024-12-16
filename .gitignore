@@ -1,5 +1,4 @@
 ﻿APC Propeller Geometry Data/
 
 # Exclude compiled Python files and the cache directory
-__pycache__/
-*.pyc
+__pycache__/*.pyc
