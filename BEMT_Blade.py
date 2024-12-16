@@ -32,22 +32,23 @@ class BEMT_Blade:
             self.airfoil_sections.append(airfoil)
 
     def get_hub_radius_from_radius_and_pitch(self, radius, pitch):
-        # Information derived from https://www.apcprop.com/product/ pages
-        if 2*radius < 5:
+        # Information derived from https://www.apcprop.com/product/?x? pages (replace ? with diameter and pitch -> 10x7
+        diameter = radius * 2
+        if diameter < 5:
             raise ValueError('Tip radius must be greater than 5 inches') # no propeller with radius less than 5 inches available
-        elif 2*radius < 8:
-            if pitch <= radius:
+        elif diameter < 8:
+            if pitch <= diameter:
                 hub_outer_diameter = 0.5
             else:
                 hub_outer_diameter = 0.65
-        elif 2*radius < 15:
-            if pitch <= radius:
+        elif diameter < 15:
+            if pitch <= diameter:
                 hub_outer_diameter = 0.8
             else:
                 hub_outer_diameter = 0.8
-        elif 2*radius < 18:
+        elif diameter < 18:
             hub_outer_diameter = 1.0
-        elif 2*radius < 21:
+        elif diameter < 21:
             hub_outer_diameter = 1.25
         return hub_outer_diameter/2 * 0.0254 ## converted to meters
 
