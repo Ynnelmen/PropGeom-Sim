@@ -21,10 +21,11 @@ class Job:
     interpolation_points = 200
     def __init__(self, propeller_name="10x7E", RPM=5000, v_inf=0, revolutions=6, observer_manager=None):
         self.propeller_name = propeller_name.upper()
+        self._base_dir = os.path.dirname(os.path.abspath(__file__))
 
         # --- GEOMETRY ---
         # Geometrical propeller parameters and export for analysis
-        self.apc_reader = APC_Reader(os.getcwd() + fr"\APC Propeller Geometry Data\{propeller_name}-PERF.PE0")
+        self.apc_reader = APC_Reader(self._base_dir + fr"\APC Propeller Geometry Data\{propeller_name}-PERF.PE0")
         self.blade = BEMT_Blade(self.apc_reader, self.interpolation_points)
         self.bemt_input = self.blade.export_geometry_for_analysis()
 
@@ -40,7 +41,7 @@ class Job:
         self.a_inf = 343
 
         # Operating conditions
-        self.RPM = RPM
+        self.RPM = int(RPM)
         self.v_inf = v_inf
         self.omega = 2 * np.pi * self.RPM / 60  # Angular velocity in rad/s
 
@@ -56,7 +57,7 @@ class Job:
             r_observer = [[0, 1.8, 0],
                           [1.8, 0, 0],
                           [0, 0, 1.8]]
-            observer_manager = ObserverManager().from_positions(r_observer)
+            self.observer_manager = ObserverManager().from_positions(r_observer)
         else:
             self.observer_manager = observer_manager
 
@@ -316,18 +317,20 @@ class Job:
         plt.suptitle("3D Sound Pressure Level Representation")
         plt.show()
 
-
-OM = ObserverManager(type="iso", number_of_observers=24)
-self = Job(observer_manager=OM, description="None", propeller_name="10x7E")
-self.run_BEMT()
-# save thrust to file
-# np.savetxt('data.txt', [self.total_thrust, self.Cp, self.Ct], delimiter=',')
-
-self.run_acoustic_analysis()
-
-# # self.plot_pressure_history_all_observers()
-# self.show_observer_positions()
-# # self.OSPL_analysis(1)
-# self.OSPL_analysis_all_observers()
-# self.plot_OSPL_surface()
 """
+j = Job()
+print(j._base_dir)
+if __name__ == "__main__":
+    OM = ObserverManager().from_iso3745()
+    self = Job(observer_manager=OM, propeller_name="10x7E")
+    self.run_BEMT()
+    # save thrust to file
+    # np.savetxt('data.txt', [self.total_thrust, self.Cp, self.Ct], delimiter=',')
+
+    self.run_acoustic_analysis()
+
+    # # self.plot_pressure_history_all_observers()
+    # self.show_observer_positions()
+    # # self.OSPL_analysis(1)
+    # self.OSPL_analysis_all_observers()
+    # self.plot_OSPL_surface()

@@ -4,6 +4,11 @@ import scipy.optimize
 import pandas as pd
 import aerosandbox as asb
 from joblib import Parallel, delayed
+import warnings
+
+
+# Suppress RuntimeWarnings for overflow encountered in exp
+warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 class PropellerParameters:
     """DEFINE GLOBAL PROPELLER PARAMETERS"""
