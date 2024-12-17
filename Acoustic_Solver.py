@@ -196,7 +196,7 @@ class AcousticObserver:
         n_points = len(self.t)
         self.frequency = np.fft.rfftfreq(n_points, dt)
         self.fft_pressure = np.fft.rfft(self.p_tot)
-        self.fft_pressure_amplitude = np.absolute(self.fft_pressure) / n_points
+        self.fft_pressure_amplitude = np.absolute(self.fft_pressure * np.sqrt(2)) / n_points # TODO check sqrt!!
 
     def _compute_SPL_Spectrum(self):
         if self.fft_pressure_amplitude is None:
