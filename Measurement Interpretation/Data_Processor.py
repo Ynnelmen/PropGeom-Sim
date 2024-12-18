@@ -426,10 +426,8 @@ class Data_Processor:
             for channels in entry["channels"]:
                 if channels["spl_value_difference"] >= 15:
                     channels["background_corrected_spl_value"] = channels["dbfs"]
-            # Check if difference is greater than 10 dB between 250 and 5^000 Hz
-            band_freq_mask, band_dbfs_mask = self.create_mask[channels["freq"],channels["dbfs"], 250, 5000]
-
-
+            # Check if difference is greater than 10 dB between 250 and 5^000 Hz # TODO
+            # band_freq_mask, band_dbfs_mask = self.create_mask[channels["freq"],channels["dbfs"], 250, 5000]
         return rpm_dataset
     
     def thrust_calculation(self, propeller_type, ct, pressure, temperature, humidity):

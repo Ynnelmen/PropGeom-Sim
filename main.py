@@ -23,7 +23,7 @@ hub_geometry_types = { ## valid for 9-11" propellers #todo find parameterization
                 "C-PERF": [1/2, 5/16, 0.56],
                 }
 
-interpolation_points = 200 ## Number of Points to define each, the lower and upper side of the airfoil. Total number of points per airfoil is 2*interpolation_points
+interpolation_points = 100 ## Number of Points to define each, the lower and upper side of the airfoil. Total number of points per airfoil is 2*interpolation_points
 ### this markably impacts filesize and to an extend processing speed. Quality (especially around leading edge) decreases at around 20 points
 ### Lofts are automatically splining to points, so the general shape is preserved even with fewer points, however then the shape begins to deviate from the with more points. If super low filesize is crucial, this can be reduced to 5-10 points
 counterclockwise_rotation = True  ## if false, propeller is mirrored
@@ -46,7 +46,7 @@ rotation_axis_is_X = True ## Default Axis of rotation is around Z. If true, prop
 # Run the script.
 # ########################################################################################################################
 ### CHANGE FILENAME HERE
-filename = os.getcwd() + r"\APC Propeller Geometry Data\10X7E-PERF.PE0"
+filename = os.getcwd() + r"\APC Propeller Geometry Data\8X8E-PERF.PE0"
 ### SET HUB GEOMETRY HERE (or leave as is to infer from propeller name)
 infer_hub_geometry = True  # If true, hub geometry is inferred from the propeller name and overwrites the following values. If False, hub geometry has to be defined manually below
 outer_radius = 0.8 / 2  # Hub Diameter [in] / 2

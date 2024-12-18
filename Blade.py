@@ -301,7 +301,7 @@ if __name__ == "__main__":
 
     interpolation_points = 100
     hub = Hub(interpolation_points * 2 - 1, 0.65 / 2, 0.15, 0.36)
-    apcreader = APC_Reader(os.getcwd() + r"\APC Propeller Geometry Data\10x8E-PERF.PE0")
+    apcreader = APC_Reader(os.getcwd() + r"\APC Propeller Geometry Data\9x9E-PERF.PE0")
     blade = Blade(apcreader, hub, interpolation_points, linear_interpolation=False, E63_correction=1, section_adaptation=None)
     # blade.create_blade(show=True)
     # blade.export_geometry_for_analysis()

@@ -461,8 +461,11 @@ class Airfoil_Section():
         self.translate([-Cx, -Cy])
         return self.X, self.Y
 
-    def calculate_cross_section_area(self, chord_length=1):
-        scalar = chord_length / self.get_chord_length()
+    def calculate_cross_section_area(self, chord_length=None):
+        if chord_length is not None:
+            scalar = chord_length / self.get_chord_length()
+        else:
+            scalar = 1
         self.A = np.abs(0.5 * (np.sum(self.X[:-1] * self.Y[1:] - self.X[1:] * self.Y[:-1]) + self.X[-1] * self.Y[0] - self.X[0] * self.Y[-1])) ** scalar
         return self.A
 
