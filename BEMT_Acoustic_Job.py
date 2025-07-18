@@ -97,8 +97,8 @@ class Job:
         self.revolutions = self.revolutions
         duration = self.revolutions * (2*np.pi/self.omega) 
         blade_passing_period = duration / self.revolutions / self.n_blades
-        observer_time_range = self.revolutions*blade_passing_period
-        num_obs_times = 50*self.revolutions
+        observer_time_range = self.n_blades * blade_passing_period
+        num_obs_times = 75*self.revolutions
 
         #Temporal discretization in source coordinate system
         n_source_times = 2*num_obs_times

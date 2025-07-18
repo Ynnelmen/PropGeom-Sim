@@ -159,7 +159,10 @@ class AcousticObserver:
                 time_array[:, 2 * j + k] = t_obs[:, j, k]
                 pressure_array_m[:, 2 * j + k] = p_m[:, j, k]
                 pressure_array_d[:, 2 * j + k] = p_d[:, j, k]
-
+        
+        self.time_matrix = time_array
+        self.pressure_matrix_m = pressure_array_m
+        self.pressure_matrix_d = pressure_array_d
         t_common_start = np.max(time_array[0, :])
         dt = time_range / n_common_time_steps
         t_common = t_common_start + np.arange(n_common_time_steps) * dt
@@ -168,6 +171,7 @@ class AcousticObserver:
     def combine_source_elements(self, f1a_output, time_range, n_common_time_steps):
 
         t_common, time_arr, pressure_arr_m, pressure_arr_d = self.__calculate_common_obs_time(f1a_output, time_range, n_common_time_steps)
+        self.t_com = t_common
 
         p_m_interp = np.zeros_like(t_common)
         p_d_interp = np.zeros_like(t_common)
